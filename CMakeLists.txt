@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
+
+set(CMAKE_CXX_STANDARD 20)
+set(PROJECT_NAME engine)
+set(BUILD_SHARED_LIBS OFF)
+project(${PROJECT_NAME} LANGUAGES CXX)
+
+if(WIN32)
+    set(BUILD_PLATFORM PLATFORM_WIN32)
+elseif(UNIX)
+    set(BUILD_PLATFORM PLATFORM_LINUX)
+else()
+    set(BUILD_PLATFORM PLATFORM_UNKNOWN)
+endif()
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/engine)
