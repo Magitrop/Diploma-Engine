@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 
-project(core LANGUAGES CXX)
 message(STATUS "Processing ${CMAKE_CURRENT_SOURCE_DIR}...")
 
-add_library(core STATIC ${CMAKE_CURRENT_SOURCE_DIR}/null.cpp)
-add_library(engine::core ALIAS core)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/time)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/resources)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/objects)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/math)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/input)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/components)

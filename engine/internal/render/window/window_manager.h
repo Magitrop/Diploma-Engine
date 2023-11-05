@@ -12,6 +12,6 @@ namespace engine
 				explicit WindowManager() = default;
 				WindowManager& operator = (WindowManager&) = delete;
 			};
-		} // render
-	} // internal
-} // engine
+		} // namespace render
+	} // namespace internal
+} // namespace engine
