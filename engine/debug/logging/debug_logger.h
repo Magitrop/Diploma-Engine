@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 
 namespace engine
@@ -11,28 +12,29 @@ namespace engine
 		public:
 			enum class Level
 			{
-				Trace,
-				Debug,
-				Info,
-				Warning,
-				Error,
-				Fatal
+				Trace,		// very detailed information
+				Debug,		// detailed information
+				Info,		// informational generalized messages or hints
+				Warning,	// noticeable warnings
+				Error,		// major errors
+				Fatal		// severe errors that should cause a crash
 			};
 
 		private:
-			Logger();
-			Logger(Logger&) = delete;
-			Logger(Logger&&) = delete;
-			Logger& operator = (Logger&) = delete;
-			Logger& operator = (Logger&&) = delete;
+			Logger() = default;
 
 		public:
 			static Logger& instance();
 
+			void setLoggingPath(std::filesystem::path path);
+			std::filesystem::path loggingPath();
+
 			void log(std::string message, Level level);
 
 		private:
-			std::string m_logsPath;
+			std::filesystem::path m_loggingPath;
 		};
 	} // namespace debug
+
+	using Logger = engine::debug::Logger;
 } // namespace engine
