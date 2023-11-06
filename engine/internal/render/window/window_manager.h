@@ -1,9 +1,11 @@
 #pragma once
 
 #include <engine/internal/helpers/helpers/construction_helper.h>
-#include <engine/render/window/window.h>
 
+#include <string>
 #include <vector>
+
+class GLFWwindow;
 
 namespace engine
 {
@@ -11,6 +13,11 @@ namespace engine
 	{
 		class Runtime;
 	} // namespace executable
+
+	namespace render
+	{
+		class Window;
+	} // namespace render
 
 	namespace internal
 	{

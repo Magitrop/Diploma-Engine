@@ -19,7 +19,7 @@ namespace engine
 
 	namespace render
 	{
-		class Window final
+		class Window final : ConstructionHelper<Window>
 		{
 		private:
 			friend class engine::internal::render::WindowManager;
