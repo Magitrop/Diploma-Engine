@@ -9,24 +9,44 @@ namespace engine
 		namespace helpers
 		{
 			template<typename Type>
-			struct ConstructionHelper
+			class Constructible final
 			{
-			protected:
-				template<typename... Args>
-				static Type construct(Args... args)
-				{
-					return Type(std::forward(args)...);
-				}
+				friend Type;
 
-				template<typename... Args>
-				static std::shared_ptr<Type> constructShared(Args... args)
+				struct ConstructibleBase
 				{
-					return std::make_shared<Type>(construct(std::forward(args)...));
-				}
+				protected:
+					template<typename... Args>
+					static Type construct(Args... args)
+					{
+						return Type(std::forward<decltype(args)>(args)...);
+					}
+
+					template<typename... Args>
+					static Type* constructRaw(Args... args)
+					{
+						return new Type(std::forward<decltype(args)>(args)...);
+					}
+
+					template<typename... Args>
+					static std::shared_ptr<Type> constructShared(Args... args)
+					{
+						return std::make_shared<Type>(construct(std::forward<decltype(args)>(args)...));
+					}
+				};
+
+				template<typename... Friends>
+				struct ConstructibleBy {};
+
+				template<typename Friend>
+				struct ConstructibleBy<Friend> : ConstructibleBase { friend Friend; };
+
+				template<typename Friend, typename... Friends>
+				struct ConstructibleBy<Friend, Friends...> : ConstructibleBy<Friend>, ConstructibleBy<Friends...> {};
 			};
 		} // namespace helpers
 	} // namespace internal
 
 	template<typename Type>
-	using ConstructionHelper = engine::internal::helpers::ConstructionHelper<Type>;
+	using Constructible = engine::internal::helpers::Constructible<Type>;
 } // namespace engine

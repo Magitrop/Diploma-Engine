@@ -15,6 +15,7 @@ else()
     set(BUILD_PLATFORM PLATFORM_UNKNOWN)
 endif()
 add_compile_definitions(${BUILD_PLATFORM})
+add_compile_definitions(IS_EDITOR)
 
 include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(${CMAKE_SOURCE_DIR}/engine)

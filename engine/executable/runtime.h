@@ -6,46 +6,36 @@ int main();
 
 namespace engine
 {
-	namespace editor
-	{
-		class EditorInitializer;
-	} // namespace editor
-
-	namespace internal
-	{
-		namespace render
-		{
-			class WindowManager;
-		} // namespace render
-	} // namespace internal
-
 	namespace executable
 	{
+		class RuntimePipeline;
+
 		class Runtime final
 		{
+			// friends
 			friend int ::main();
 
-			using EditorInitializer = engine::editor::EditorInitializer;
-			using WindowManager = engine::internal::render::WindowManager;
-
+			// members
 		private:
-			explicit Runtime() = default;
+			explicit Runtime();
 			Runtime(Runtime&) = delete;
 			Runtime(Runtime&&) = delete;
 			Runtime& operator = (Runtime&) = delete;
 			Runtime& operator = (Runtime&&) = delete;
 
-		public:
 			void initialize();
-			
+
+		public:
+			std::shared_ptr<const RuntimePipeline> getPipeline() const;
 
 		private:
-			void initializeGL();
-			void initializeEditor();
-			void initializeWindowManager();
+			template<typename Pipeline>
+			void setPipeline()
+			{
+				m_runtimePipeline = Pipeline::Constructor::constructShared();
+			}
 
-			std::shared_ptr<EditorInitializer> editorInitializer;
-			std::shared_ptr<WindowManager> windowManager;
+			std::shared_ptr<RuntimePipeline> m_runtimePipeline;
 		};
 	} // namespace executable
 } // namespace engine

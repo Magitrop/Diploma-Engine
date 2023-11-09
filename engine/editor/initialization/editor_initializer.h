@@ -6,16 +6,13 @@ namespace engine
 {
 	namespace executable
 	{
-		class Runtime;
+		class EditorRuntimePipeline;
 	} // namespace executable
 
 	namespace editor
 	{
-		class EditorInitializer final : ConstructionHelper<EditorInitializer>
+		class EditorInitializer final
 		{
-			friend class ConstructionHelper;
-			friend class engine::executable::Runtime;
-
 		private:
 			explicit EditorInitializer() = default;
 		};

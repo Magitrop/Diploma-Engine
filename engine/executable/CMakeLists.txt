@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 project(executable LANGUAGES CXX)
 message(STATUS "Processing ${CMAKE_CURRENT_SOURCE_DIR}...")
 
-add_executable(${PROJECT_NAME} 
-	${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-)
+file(GLOB_RECURSE SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB_RECURSE INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
+add_executable(${PROJECT_NAME} ${SOURCE} ${INCLUDE})
 
 find_package(fmt REQUIRED PATHS "${CMAKE_SOURCE_DIR}/engine/dependencies/fmt")
 find_package(spdlog REQUIRED PATHS "${CMAKE_SOURCE_DIR}/engine/dependencies/spdlog")
@@ -39,6 +39,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 	engine::internal::render::gl::glad
 	engine::internal::render::gl::glm
 
+    # externals
     spdlog
 )
 

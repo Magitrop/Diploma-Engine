@@ -1,32 +1,20 @@
 #include "runtime.h"
 
-#include <engine/editor/initialization/editor_initializer.h>
-#include <engine/internal/render/gl/glad/include/glad/glad.h>
-#include <engine/internal/render/gl/glfw/include/GLFW/glfw3.h>
 #include <engine/internal/render/window/window_manager.h>
+#include <engine/executable/editor_runtime_pipeline.h>
 
 using Runtime = engine::executable::Runtime;
 
+Runtime::Runtime()
+	: m_runtimePipeline(nullptr)
+{}
+
 void Runtime::initialize()
 {
-	initializeGL();
-	initializeEditor();
-	initializeWindowManager();
+	m_runtimePipeline->initialize();
 }
 
-void Runtime::initializeGL()
+std::shared_ptr<const engine::executable::RuntimePipeline> Runtime::getPipeline() const
 {
-	glfwInit();
-	gladLoadGL();
-	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-}
-
-void Runtime::initializeEditor()
-{
-	editorInitializer = EditorInitializer::constructShared();
-}
-
-void Runtime::initializeWindowManager()
-{
-	windowManager = WindowManager::constructShared();
+	return m_runtimePipeline;
 }
