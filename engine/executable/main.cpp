@@ -2,6 +2,7 @@
 #include <engine/executable/runtime.h>
 
 #include <iostream>
+#include <engine/internal/helpers/helpers/persistent_vector.h>
 
 using Runtime = engine::executable::Runtime;
 using EditorRuntimePipeline = engine::executable::EditorRuntimePipeline;
@@ -11,4 +12,5 @@ int main()
 	Runtime runtime;
 	runtime.setPipeline<EditorRuntimePipeline>();
 	runtime.initialize();
+	runtime.run();
 }

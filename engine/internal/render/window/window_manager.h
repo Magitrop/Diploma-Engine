@@ -1,6 +1,5 @@
 #pragma once
 
-#include <engine/internal/helpers/helpers/construction_helper.h>
 #include <engine/render/window/window.h>
 
 #include <string>
@@ -12,7 +11,7 @@ namespace engine
 {
 	namespace executable
 	{
-		class Runtime;
+		class ProductionRuntimePipeline;
 	} // namespace executable
 
 	namespace render
@@ -26,29 +25,29 @@ namespace engine
 		{
 			class WindowManager final
 			{
-				friend Constructible<WindowManager>;
-
+				// usings
 			private:
 				using Window = engine::render::Window;
-				using Runtime = engine::executable::Runtime;
 
+				// friends
 			private:
-				WindowManager() = default;
+				friend engine::executable::ProductionRuntimePipeline;
 
+				// members
 			public:
-				using Constructor = Constructible<WindowManager>::ConstructibleBy<Runtime>;
+				~WindowManager();
 
-			private:
-				const Window& createWindow(std::size_t width,
+				const Window* createWindow(std::size_t width,
 										   std::size_t height,
 										   std::string label = "",
 										   bool isResizable = true,
-										   GLFWwindow* sharedContext = nullptr);
-				const Window& getWindowByID(std::size_t id) const;
+										   const Window* sharedContext = nullptr);
+				const Window* getWindowByID(std::size_t id) const;
 
-				void setWindowAsCurrentContext(const Window& window);
+				void setWindowAsCurrentContext(const Window* window);
 
-				std::vector<Window> m_createdWindows;
+			private:
+				std::list<Window> m_createdWindows;
 			};
 		} // namespace render
 	} // namespace internal

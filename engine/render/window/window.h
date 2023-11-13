@@ -1,7 +1,6 @@
 #pragma once
 
 #include <engine/debug/logging/debug_logger.h>
-#include <engine/internal/helpers/helpers/construction_helper.h>
 
 #include <string>
 
@@ -19,32 +18,23 @@ namespace engine
 
 	namespace render
 	{
+		// A non-owning wrapper for the GLFW window.
 		class Window final
 		{
-			// usings
-		private:
-			using WindowManager = engine::internal::render::WindowManager;
-
-		public:
-			using Constructor = Constructible<Window>::ConstructibleBy<WindowManager>;
-
 			// friends
 		private:
-			friend Constructible<Window>;
-			friend class WindowManager;
+			friend class engine::internal::render::WindowManager;
 
 			// members
 		private:
 			explicit Window(std::size_t width,
 							std::size_t height,
 							std::string label = "", 
-							bool isResizable = true, 
-							GLFWwindow* sharedContext = nullptr);
+							bool isResizable = true,
+							GLFWwindow* window = nullptr);
 			explicit Window();
 
 		public:
-			~Window();
-
 			std::size_t width() const;
 			std::size_t height() const;
 			bool isResizable() const;

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <engine/internal/helpers/helpers/construction_helper.h>
-
 namespace engine
 {
 	namespace executable

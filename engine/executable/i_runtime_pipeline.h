@@ -1,18 +1,26 @@
 #pragma once
 
+#include <memory>
+
 namespace engine
 {
 	namespace executable
 	{
-		class IPipelineStorage
-		{
-
-		};
-
 		class IRuntimePipeline
 		{
-			friend class RuntimeAccessor;
-			virtual const IPipelineStorage* storage() const = 0;
+			// friends
+		private:
+			friend class Runtime;
+
+			// members
+		public:
+			bool isRunning();
+
+		protected:
+			virtual void initialize() = 0;
+			virtual void run() = 0;
+
+			bool m_isRunning = false;
 		};
 	} // namespace executable
 } // namespace engine

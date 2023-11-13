@@ -1,17 +1,18 @@
 #pragma once
 
+#include <memory>
+
 namespace engine
 {
 	namespace executable
 	{
-		class IPipelineStorage;
+		class PipelineStorage;
 		class Runtime;
 
 		class RuntimeAccessor
 		{
 		protected:
-			const Runtime* runtime();
-			const IPipelineStorage* storage();
+			// getResourceManager()... etc
 
 		private:
 			const Runtime* m_runtime;

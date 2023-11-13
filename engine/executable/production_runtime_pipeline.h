@@ -1,13 +1,16 @@
 #pragma once
 
-#include <engine/internal/helpers/helpers/construction_helper.h>
+#include <engine/executable/i_runtime_pipeline.h>
 
 #include <memory>
 
-int main();
-
 namespace engine
 {
+	namespace render
+	{
+		class Window;
+	} // namespace render
+
 	namespace internal
 	{
 		namespace render
@@ -18,18 +21,29 @@ namespace engine
 
 	namespace executable
 	{
-		class ProductionRuntimePipeline final
+		class ProductionRuntimePipeline : public IRuntimePipeline
 		{
-			friend int ::main();
-
+			// usings
+		protected:
 			using WindowManager = engine::internal::render::WindowManager;
+			using Window = engine::render::Window;
 
+			// friends
 		private:
-			explicit ProductionRuntimePipeline() = default;
+			friend class Runtime;
+			friend class RuntimeAccessor;
 
-		public:
-			//virtual void initialize() override;
-			//virtual void runtime() override;
+			// members
+		protected:
+			virtual void initialize() override;
+			virtual void run() override;
+
+			void initializeGLFW();
+			void initializeGraphicAPI();
+
+			void initializeWindowManager();
+
+			std::shared_ptr<WindowManager> m_windowManager;
 		};
 	}
 }
