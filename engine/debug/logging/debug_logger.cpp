@@ -2,23 +2,23 @@
 
 #include <engine/dependencies/spdlog/include/spdlog/spdlog.h>
 
-engine::debug::Logger& engine::debug::Logger::instance()
+engine::Logger& engine::Logger::instance()
 {
 	static Logger logger;
 	return logger;
 }
 
-void engine::debug::Logger::setLoggingPath(std::filesystem::path path)
+void engine::Logger::setLoggingPath(std::filesystem::path path)
 {
 	m_loggingPath = path;
 }
 
-std::filesystem::path engine::debug::Logger::loggingPath()
+std::filesystem::path engine::Logger::loggingPath()
 {
 	return m_loggingPath;
 }
 
-void engine::debug::Logger::log(std::string message, Level level)
+void engine::Logger::log(std::string message, Level level)
 {
 
 }

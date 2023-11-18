@@ -4,18 +4,15 @@
 
 namespace engine
 {
-	namespace executable
+	class PipelineStorage;
+	class Runtime;
+
+	class RuntimeAccessor
 	{
-		class PipelineStorage;
-		class Runtime;
+	protected:
+		// getResourceManager()... etc
 
-		class RuntimeAccessor
-		{
-		protected:
-			// getResourceManager()... etc
-
-		private:
-			const Runtime* m_runtime;
-		};
-	} // namespace executable
+	private:
+		const Runtime* m_runtime;
+	};
 } // namespace engine

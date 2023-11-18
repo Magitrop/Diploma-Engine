@@ -1,6 +1,7 @@
 #pragma once
 
 #include <engine/render/window/window.h>
+#include <engine/internal/helpers/persistent_vector.h>
 
 #include <string>
 #include <vector>
@@ -9,46 +10,30 @@ class GLFWwindow;
 
 namespace engine
 {
-	namespace executable
+	// A factory and container for Window objects.
+	class WindowManager final
 	{
-		class ProductionRuntimePipeline;
-	} // namespace executable
+		// friends
+	private:
+		friend class ProductionRuntimePipeline;
 
-	namespace render
-	{
-		class Window;
-	} // namespace render
+		// members
+	private:
+		explicit WindowManager();
 
-	namespace internal
-	{
-		namespace render
-		{
-			class WindowManager final
-			{
-				// usings
-			private:
-				using Window = engine::render::Window;
+	public:
+		~WindowManager();
 
-				// friends
-			private:
-				friend engine::executable::ProductionRuntimePipeline;
+		const Window* createWindow(std::size_t width,
+								   std::size_t height,
+								   std::string label = "",
+								   bool isResizable = true,
+								   const Window* sharedContext = nullptr);
+		const Window* getWindowByID(std::size_t id) const;
 
-				// members
-			public:
-				~WindowManager();
+		void setWindowAsCurrentContext(const Window* window);
 
-				const Window* createWindow(std::size_t width,
-										   std::size_t height,
-										   std::string label = "",
-										   bool isResizable = true,
-										   const Window* sharedContext = nullptr);
-				const Window* getWindowByID(std::size_t id) const;
-
-				void setWindowAsCurrentContext(const Window* window);
-
-			private:
-				std::list<Window> m_createdWindows;
-			};
-		} // namespace render
-	} // namespace internal
+	private:
+		PersistentVector<Window, 8> m_createdWindows; // it is rather unlikely to have more than 8 windows at once
+	};
 } // namespace engine

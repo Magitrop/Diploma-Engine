@@ -1,49 +1,34 @@
 #pragma once
 
 #include <engine/executable/i_runtime_pipeline.h>
+#include <engine/internal/render/graphic_api/i_graphic_api.h>
 
 #include <memory>
 
 namespace engine
 {
-	namespace render
+	class WindowManager;
+	class ProductionRuntimePipeline : public IRuntimePipeline
 	{
-		class Window;
-	} // namespace render
+		// friends
+	private:
+		friend class Runtime;
+		friend class RuntimeAccessor;
 
-	namespace internal
-	{
-		namespace render
-		{
-			class WindowManager;
-		} // namespace render
-	} // namespace internal
+		// members
+	protected:
+		virtual void initialize() override;
+		virtual void finalize() override;
+		virtual void run() override;
 
-	namespace executable
-	{
-		class ProductionRuntimePipeline : public IRuntimePipeline
-		{
-			// usings
-		protected:
-			using WindowManager = engine::internal::render::WindowManager;
-			using Window = engine::render::Window;
+		void initializeGLFW();
+		void initializeGraphicAPI();
+		void initializeWindowManager();
 
-			// friends
-		private:
-			friend class Runtime;
-			friend class RuntimeAccessor;
+		void finalizeGLFW();
+		void finalizeGraphicAPI();
 
-			// members
-		protected:
-			virtual void initialize() override;
-			virtual void run() override;
-
-			void initializeGLFW();
-			void initializeGraphicAPI();
-
-			void initializeWindowManager();
-
-			std::shared_ptr<WindowManager> m_windowManager;
-		};
-	}
-}
+		std::shared_ptr<IGraphicAPI> m_graphicAPI;
+		std::shared_ptr<WindowManager> m_windowManager;
+	};
+} // namespace engine

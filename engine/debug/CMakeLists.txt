@@ -4,3 +4,4 @@ message(STATUS "Processing ${CMAKE_CURRENT_SOURCE_DIR}...")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/drawer)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/logging)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/memory)

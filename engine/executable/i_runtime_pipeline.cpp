@@ -1,8 +1,9 @@
 #include "i_runtime_pipeline.h"
 
-using IRuntimePipeline = engine::executable::IRuntimePipeline;
-
-bool IRuntimePipeline::isRunning()
+namespace engine
 {
-    return m_isRunning;
-}
+    bool IRuntimePipeline::isRunning()
+    {
+        return m_isRunning;
+    }
+} // namespace engine

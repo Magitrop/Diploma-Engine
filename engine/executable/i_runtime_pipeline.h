@@ -4,23 +4,27 @@
 
 namespace engine
 {
-	namespace executable
+	template<typename GraphicAPI>
+	struct RuntimePipelineContext
 	{
-		class IRuntimePipeline
-		{
-			// friends
-		private:
-			friend class Runtime;
+		typedef GraphicAPI GraphicAPI;
+	};
 
-			// members
-		public:
-			bool isRunning();
+	class IRuntimePipeline
+	{
+		// friends
+	private:
+		friend class Runtime;
 
-		protected:
-			virtual void initialize() = 0;
-			virtual void run() = 0;
+		// members
+	public:
+		bool isRunning();
 
-			bool m_isRunning = false;
-		};
-	} // namespace executable
+	protected:
+		virtual void initialize() = 0;
+		virtual void finalize() = 0;
+		virtual void run() = 0;
+
+		bool m_isRunning = false;
+	};
 } // namespace engine

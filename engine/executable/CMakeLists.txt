@@ -19,6 +19,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
     engine::debug::drawer
     engine::debug::logging
+    engine::debug::memory
 
     engine::editor::gizmo
     engine::editor::gui
@@ -34,12 +35,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 	engine::internal::helpers
 
+    engine::internal::render::graphic_api
     engine::internal::render::window
-	engine::internal::render::gl::glfw
-	engine::internal::render::gl::glad
-	engine::internal::render::gl::glm
-
+    
     # externals
+	glad
+	glfw
+	glm
     spdlog
 )
 

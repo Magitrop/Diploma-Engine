@@ -1,44 +1,51 @@
 #include "editor_runtime_pipeline.h"
 
-#include <engine/internal/render/gl/glad/include/glad/glad.h>
-#include <engine/internal/render/gl/glfw/include/GLFW/glfw3.h>
+#include <engine/debug/memory/memory_guard.h>
+#include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
 #include <engine/internal/render/window/window_manager.h>
 #include <engine/executable/runtime.h>
 
 #include <iostream>
 
-using EditorRuntimePipeline = engine::executable::EditorRuntimePipeline;
-using WindowManager = engine::internal::render::WindowManager;
-using Window = engine::render::Window;
-
-EditorRuntimePipeline::EditorRuntimePipeline() 
-	: m_editorWindow(nullptr)
-{}
-
-void EditorRuntimePipeline::initialize()
+namespace engine
 {
-	initializeGLFW();
-	initializeWindowManager();
-	initializeEditor();
-}
+	EditorRuntimePipeline::EditorRuntimePipeline()
+		: m_editorWindow(nullptr)
+	{}
 
-void EditorRuntimePipeline::run()
-{
-	// creating editor winow
-	m_editorWindow = m_windowManager->createWindow(400, 400, "Editor");
-	m_windowManager->setWindowAsCurrentContext(m_editorWindow);
+	void EditorRuntimePipeline::initialize()
+	{
+		MEMORY_GUARD;
 
-	initializeGraphicAPI();
+		initializeGLFW();
+		initializeWindowManager();
+		initializeEditor();
+	}
 
-	m_isRunning = true;
+	void EditorRuntimePipeline::finalize()
+	{
+	}
 
-	while (isRunning())
+	void EditorRuntimePipeline::run()
+	{
+		MEMORY_GUARD;
+
+		// creating editor winâow
+		m_editorWindow = m_windowManager->createWindow(400, 400, "Editor");
+		m_windowManager->setWindowAsCurrentContext(m_editorWindow);
+
+		initializeGraphicAPI();
+
+		m_isRunning = true;
+
+		while (isRunning())
+		{
+
+		}
+	}
+
+	void EditorRuntimePipeline::initializeEditor()
 	{
 
 	}
-}
-
-void EditorRuntimePipeline::initializeEditor()
-{
-
-}
+} // namespace engine

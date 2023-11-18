@@ -1,16 +1,21 @@
 #include "window_manager.h"
 
+#include <engine/debug/memory/memory_guard.h>
+#include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
 #include <engine/render/window/window.h>
-#include <engine/internal/render/gl/glfw/include/GLFW/glfw3.h>
 
-using WindowManager = engine::internal::render::WindowManager;
+using WindowManager = engine::WindowManager;
 
-const WindowManager::Window* WindowManager::createWindow(std::size_t width,
-														 std::size_t height,
-														 std::string label /* = "" */,
-														 bool isResizable /* = true */,
-														 const Window* sharedContext /* = nullptr */)
+const engine::Window* WindowManager::createWindow(std::size_t width,
+												  std::size_t height,
+												  std::string label /* = "" */,
+												  bool isResizable /* = true */,
+												  const Window* sharedContext /* = nullptr */)
 {
+	MEMORY_GUARD;
+
+	// TODO: ban non-main threads
+
 	// setting up window parameters
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -33,30 +38,34 @@ const WindowManager::Window* WindowManager::createWindow(std::size_t width,
 		return nullptr;
 	}
 	
-	return &m_createdWindows.emplace_back(window);
+	return &m_createdWindows.push(std::move(window));
 }
 
 WindowManager::~WindowManager()
 {
-	for (auto& window : m_createdWindows)
+	MEMORY_GUARD;
+
+	// TODO: begin() and end() for PersistentVector? too slow otherwise
+	// for (auto& window : m_createdWindows)
+	for (std::size_t i = 0; i < m_createdWindows.size(); ++i)
 	{
-		glfwDestroyWindow(window.m_window);
+		glfwDestroyWindow(m_createdWindows[i].m_window);
 	}
 }
 
-const WindowManager::Window* WindowManager::getWindowByID(std::size_t id) const
+const engine::Window* WindowManager::getWindowByID(std::size_t id) const
 {
 	if (id < m_createdWindows.size())
 	{
-		auto it = m_createdWindows.begin();
-		std::advance(it, id);
-        return &*it;
+        return &m_createdWindows[id];
 	}
     return nullptr;
 }
 
 void WindowManager::setWindowAsCurrentContext(const Window* window)
 {
+	MEMORY_GUARD;
+
 	if (window && window->isValid())
 		glfwMakeContextCurrent(window->m_window);
 }
