@@ -2,8 +2,7 @@
 
 #include <new>
 
-#ifdef USE_MEMORY_GUARD
-
+#if USE_MEMORY_GUARD
 namespace engine
 {
 	void* MemoryGuardAllocator::allocate(std::size_t size)
@@ -39,7 +38,7 @@ namespace engine
 	void MemoryGuardStack::push(const char* function, const char* file, std::size_t line)
 	{
 		if (m_stackPosition >= STACK_MAX_DEPTH)
-			throw std::exception{};
+			throw std::exception("Memory guard stack overflow.");
 
 		auto& context = m_stack[m_stackPosition];
 		context.m_function = function;
@@ -52,7 +51,7 @@ namespace engine
 	void MemoryGuardStack::pop()
 	{
 		if (m_stackPosition <= 0)
-			throw std::exception{};
+			throw std::exception("Popping from an empty memory guard stack.");
 		--m_stackPosition;
 	}
 
@@ -87,5 +86,4 @@ void ::operator delete(void* ptr)
 {
 	engine::MemoryGuardAllocator::deallocate(ptr);
 }
-
-#endif // #ifdef USE_MEMORY_GUARD
+#endif // #if USE_MEMORY_GUARD

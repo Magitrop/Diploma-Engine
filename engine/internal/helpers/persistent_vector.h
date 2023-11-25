@@ -3,82 +3,88 @@
 #include <queue>
 #include <list>
 #include <array>
+#include <memory>
 
 namespace engine
 {
-	// A node with a persistent address.
-	template<typename Type>
-	struct PersistentNode final
-	{
-		PersistentNode();
-		PersistentNode(Type& value);
-		PersistentNode(Type&& value);
+	// Should be changed if page capacity is supposed to be larger than 65536.
+	using PageCapacityType = std::uint16_t;
 
-		Type& get();
-		const Type& get() const;
-		bool empty() const;
-
-	private:
-		Type m_value;
-		bool m_empty;
-	};
-
-	// A vector that does not shift elements when erasing.
-	template<typename Type, std::uint16_t PageCapacity = 2048>
+	// A vector that does not shift elements when erasing or reallocating.
+	// - Note that PageCapacity is NOT measured in bytes. It represents the maximum amount of elements per page.
+	// - Set PageCapacity as big as necessary in order to improve performance.
+	template<typename Type, PageCapacityType PageCapacity = 2048>
 	class PersistentVector final
 	{
 	private:
+		// A slot with a persistent address.
+		struct Slot final
+		{
+			Slot();
+			Slot(Type& value);
+			Slot(Type&& value);
+
+			Type& get();
+			const Type& get() const;
+			bool empty() const;
+
+		private:
+			Type m_value;
+			bool m_empty;
+		};
+
 		using This = PersistentVector<Type>;
-		using Page = std::array<PersistentNode<Type>, PageCapacity>;
+		using Page = std::array<Slot, PageCapacity>;
+		using Pages = std::list<std::shared_ptr<Page>>;
 
 	public:
-		explicit PersistentVector();
+		constexpr explicit PersistentVector();
 
 		Type& push(Type& value);
 		Type& push(Type&& value);
-		void remove(std::size_t at);
+		void remove(Pages::iterator page, PageCapacityType index);
 
-		std::size_t size() const;
+		[[nodiscard]] Pages::const_iterator begin() const;
+		[[nodiscard]] Pages::const_iterator end() const;
 
-		Type& operator [] (std::size_t at);
-		const Type& operator [] (std::size_t at) const;
+		[[nodiscard]] std::size_t size() const;
 
 	private:
-		Type& pushInternal(PersistentNode<Type>&& node);
+		Type& pushInternal(Slot&& slot);
 		void createPage();
 
 		struct EmptyIndex
 		{
-			Page* page;
-			std::size_t index;
+			std::shared_ptr<Page> page;
+			PageCapacityType index;
 		};
 
+		Pages m_pages;
 		std::queue<EmptyIndex> m_emptyIndices;
-		std::list<Page> m_pages;
-		std::uint16_t m_currentIndex = 0;
+		PageCapacityType m_currentIndex = 0;
 		std::size_t m_count = 0;
 	};
 
-	template<typename Type, std::uint16_t PageCapacity>
-	PersistentVector<Type, PageCapacity>::PersistentVector()
+	template<typename Type, PageCapacityType PageCapacity>
+	constexpr PersistentVector<Type, PageCapacity>::PersistentVector()
 	{
 		createPage();
 	}
 
-	template<typename Type, std::uint16_t PageCapacity>
+	template<typename Type, PageCapacityType PageCapacity>
 	Type& PersistentVector<Type, PageCapacity>::push(Type& value)
 	{
-		return pushInternal(std::move(PersistentNode<Type>(value)));
+		return pushInternal(std::move(Slot(value)));
 	}
 
-	template<typename Type, std::uint16_t PageCapacity>
+	template<typename Type, PageCapacityType PageCapacity>
 	Type& PersistentVector<Type, PageCapacity>::push(Type&& value)
 	{
-		return pushInternal(std::move(PersistentNode<Type>(std::move(value))));
+		return pushInternal(std::move(Slot(std::move(value))));
 	}
 
-	template<typename Type, std::uint16_t PageCapacity>
-	Type& PersistentVector<Type, PageCapacity>::pushInternal(PersistentNode<Type>&& node)
+	template<typename Type, PageCapacityType PageCapacity>
+	Type& PersistentVector<Type, PageCapacity>::pushInternal(Slot&& slot)
 	{
 		++m_count;
 		if (m_emptyIndices.empty())
@@ -89,8 +95,8 @@ namespace engine
 				m_currentIndex = 0;
 			}
 
-			auto& result = m_pages.back()[m_currentIndex];
-			result = std::move(node);
+			auto& result = (*m_pages.back())[m_currentIndex];
+			result = std::move(slot);
 
 			++m_currentIndex;
 
@@ -102,102 +108,80 @@ namespace engine
 			m_emptyIndices.pop();
 
 			auto& result = (*empty.page)[empty.index];
-			result = std::move(node);
+			result = std::move(slot);
 
 			return result.get();
 		}
 	}
 
-	template<typename Type, std::uint16_t PageCapacity>
-	void PersistentVector<Type, PageCapacity>::remove(std::size_t at)
+	template<typename Type, PageCapacityType PageCapacity>
+	void PersistentVector<Type, PageCapacity>::remove(Pages::iterator page, PageCapacityType index)
 	{
-		// TODO: should throw?
-		if (at >= m_pages.size() * PageCapacity)
+		auto& slot = (**page)[index];
+		if (slot.empty())
 			return;
 
-		std::size_t page = at / PageCapacity;
-		std::uint16_t index = at % PageCapacity;
-
-		auto it = m_pages.begin();
-		std::advance(it, page);
-
-		auto& node = (*it)[index];
-		if (node.empty())
-			return;
-
-		m_emptyIndices.push({ &*it, index });
-		node = std::move(PersistentNode<Type>());
+		m_emptyIndices.push({ *page, index });
+		slot = std::move(Slot());
 
 		--m_count;
 	}
 
-	template<typename Type, std::uint16_t PageCapacity>
+	template<typename Type, PageCapacityType PageCapacity>
+	PersistentVector<Type, PageCapacity>::Pages::const_iterator PersistentVector<Type, PageCapacity>::begin() const
+	{
+		return m_pages.begin();
+	}
+
+	template<typename Type, PageCapacityType PageCapacity>
+	PersistentVector<Type, PageCapacity>::Pages::const_iterator PersistentVector<Type, PageCapacity>::end() const
+	{
+		return m_pages.end();
+	}
+
+	template<typename Type, PageCapacityType PageCapacity>
 	std::size_t PersistentVector<Type, PageCapacity>::size() const
 	{
 		return m_count;
 	}
 
-	template<typename Type, std::uint16_t PageCapacity>
-	Type& PersistentVector<Type, PageCapacity>::operator [] (std::size_t at)
-	{
-		std::size_t page = at / PageCapacity;
-		std::uint16_t index = at % PageCapacity;
-
-		auto it = m_pages.begin();
-		std::advance(it, page);
-
-		return (*it)[index].get();
-	}
-
-	template<typename Type, std::uint16_t PageCapacity>
-	const Type& PersistentVector<Type, PageCapacity>::operator[](std::size_t at) const
-	{
-		std::size_t page = at / PageCapacity;
-		std::uint16_t index = at % PageCapacity;
-
-		auto it = m_pages.begin();
-		std::advance(it, page);
-
-		return (*it)[index].get();
-	}
-
-	template<typename Type, std::uint16_t PageCapacity>
+	template<typename Type, PageCapacityType PageCapacity>
 	void PersistentVector<Type, PageCapacity>::createPage()
 	{
-		&m_pages.emplace_back(std::move(Page()));
+		&m_pages.emplace_back(std::make_shared<Page>());
 	}
 
-	template<typename Type>
-	PersistentNode<Type>::PersistentNode()
+	template<typename Type, PageCapacityType PageCapacity>
+	PersistentVector<Type, PageCapacity>::Slot::Slot()
 		: m_empty(true)
 	{}
 
-	template<typename Type>
-	PersistentNode<Type>::PersistentNode(Type& value)
+	template<typename Type, PageCapacityType PageCapacity>
+	PersistentVector<Type, PageCapacity>::Slot::Slot(Type& value)
 		: m_value(value)
 		, m_empty(false)
 	{}
 
-	template<typename Type>
-	PersistentNode<Type>::PersistentNode(Type&& value)
+	template<typename Type, PageCapacityType PageCapacity>
+	PersistentVector<Type, PageCapacity>::Slot::Slot(Type&& value)
 		: m_value(std::move(value))
 		, m_empty(false)
 	{}
 
-	template<typename Type>
-	Type& PersistentNode<Type>::get()
+	template<typename Type, PageCapacityType PageCapacity>
+	Type& PersistentVector<Type, PageCapacity>::Slot::get()
 	{
 		return m_value;
 	}
 
-	template<typename Type>
-	const Type& PersistentNode<Type>::get() const
+	template<typename Type, PageCapacityType PageCapacity>
+	const Type& PersistentVector<Type, PageCapacity>::Slot::get() const
 	{
 		return m_value;
 	}
 
-	template<typename Type>
-	bool PersistentNode<Type>::empty() const
+	template<typename Type, PageCapacityType PageCapacity>
+	bool PersistentVector<Type, PageCapacity>::Slot::empty() const
 	{
 		return m_empty;
 	}

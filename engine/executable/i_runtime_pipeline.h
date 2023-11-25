@@ -4,12 +4,6 @@
 
 namespace engine
 {
-	template<typename GraphicAPI>
-	struct RuntimePipelineContext
-	{
-		typedef GraphicAPI GraphicAPI;
-	};
-
 	class IRuntimePipeline
 	{
 		// friends
@@ -21,7 +15,7 @@ namespace engine
 		bool isRunning();
 
 	protected:
-		virtual void initialize() = 0;
+		virtual bool initialize() = 0;
 		virtual void finalize() = 0;
 		virtual void run() = 0;
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <engine/debug/logging/debug_logger.h>
-
 #include <string>
+
+#include <engine/debug/logging/debug_logger.h>
 
 class GLFWwindow;
 

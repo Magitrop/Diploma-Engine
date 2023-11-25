@@ -17,11 +17,12 @@ namespace engine
 	private:
 		explicit EditorRuntimePipeline();
 
-		virtual void initialize() override;
+		virtual bool initialize() override;
 		virtual void finalize() override;
 		virtual void run() override;
 
-		void initializeEditor();
+		bool initializeEditor();
+		bool createEditorWindow();
 
 		const Window* m_editorWindow;
 	};

@@ -5,6 +5,11 @@
 
 namespace engine
 {
+	GladGraphicAPI::GladGraphicAPI()
+	{
+
+	}
+
 	bool GladGraphicAPI::initialize()
 	{
 		// TODO: log errors

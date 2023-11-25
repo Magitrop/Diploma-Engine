@@ -3,17 +3,23 @@
 #include <engine/core/math/vector2.h>
 #include <engine/core/math/vector3.h>
 #include <engine/core/math/vector4.h>
+#include <engine/core/math/matrix2x2.h>
+#include <engine/core/math/matrix3x3.h>
+#include <engine/core/math/matrix4x4.h>
 
 #include <string>
 #include <map>
 
 namespace engine
 {
-    class Shader
+    // A lightweight wrapper for an actual shader in the Resource Manager.
+    // Cannot be used directly. Activate via Material instead.
+    class Shader final
     {
+    private:
+        Shader(std::size_t id);
+
     public:
-        Shader(const char* vertexPath = "", const char* fragmentPath = "");
-        void use() const;
         void setBool(const std::string& name, bool value) const;
         void setInt(const std::string& name, int value) const;
         void setFloat(const std::string& name, float value) const;
@@ -26,8 +32,8 @@ namespace engine
         void setMatrix2x2(const std::string& name, const Matrix2x2& mat) const;
         void setMatrix3x3(const std::string& name, const Matrix3x3& mat) const;
         void setMatrix4x4(const std::string& name, const Matrix4x4& mat) const;
+
     private:
-        void checkCompileErrors(unsigned int shader, std::string type);
-        GLuint m_id;
+        std::size_t m_id; // the ID of an actual shader
     };
 } // namespace engine

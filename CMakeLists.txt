@@ -6,6 +6,7 @@ set(BUILD_SHARED_LIBS OFF)
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 if(WIN32)
     set(BUILD_PLATFORM PLATFORM_WINDOWS)
@@ -14,9 +15,11 @@ elseif(UNIX)
 else()
     set(BUILD_PLATFORM PLATFORM_UNKNOWN)
 endif()
+
 add_compile_definitions(${BUILD_PLATFORM})
-add_compile_definitions(IS_EDITOR)
-add_compile_definitions(USE_MEMORY_GUARD)
+add_compile_definitions(IS_EDITOR=1)
+add_compile_definitions(USE_LOGGER=$<CONFIG:Debug>)
+add_compile_definitions(USE_MEMORY_GUARD=$<CONFIG:Debug>)
 
 include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory(${CMAKE_SOURCE_DIR}/engine)

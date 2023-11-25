@@ -3,9 +3,7 @@
 #include <cstddef>
 #include <unordered_map>
 
-#ifdef USE_MEMORY_GUARD
-
-#define MEMORY_GUARD engine::MemoryGuardScope _MEMORY_GUARD_(__func__, __FILE__, __LINE__)
+#if USE_MEMORY_GUARD
 namespace engine
 {
 	struct MemoryGuardContext
@@ -22,7 +20,7 @@ namespace engine
 		static const MemoryGuardContext& front();
 
 	private:
-		static const std::size_t STACK_MAX_DEPTH = 1024;
+		static const std::size_t STACK_MAX_DEPTH = 512;
 
 		static thread_local MemoryGuardContext m_stack[STACK_MAX_DEPTH];
 		static thread_local std::size_t m_stackPosition;
@@ -82,7 +80,7 @@ namespace engine
 		static AllocationsMap m_allocations;
 	};
 } // namespace engine
-
+#define MEMORY_GUARD engine::MemoryGuardScope _MEMORY_GUARD_(__func__, __FILE__, __LINE__)
 #else
 #define MEMORY_GUARD
-#endif // #ifdef USE_MEMORY_GUARD
+#endif // #if USE_MEMORY_GUARD

@@ -1,10 +1,9 @@
 #pragma once
 
-#include <engine/render/window/window.h>
-#include <engine/internal/helpers/persistent_vector.h>
-
-#include <string>
 #include <vector>
+
+#include <engine/internal/helpers/persistent_vector.h>
+#include <engine/render/window/window.h>
 
 class GLFWwindow;
 
@@ -19,7 +18,7 @@ namespace engine
 
 		// members
 	private:
-		explicit WindowManager();
+		explicit WindowManager() = default;
 
 	public:
 		~WindowManager();
@@ -32,6 +31,8 @@ namespace engine
 		const Window* getWindowByID(std::size_t id) const;
 
 		void setWindowAsCurrentContext(const Window* window);
+		void setWindowTitle(const Window* window, const char* title);
+		void swapBuffers(const Window* window);
 
 	private:
 		PersistentVector<Window, 8> m_createdWindows; // it is rather unlikely to have more than 8 windows at once
