@@ -19,7 +19,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     engine::core::components
     engine::core::input
     engine::core::math
-    engine::core::objects
+    engine::core::entity
     engine::core::resources
     engine::core::time
 
@@ -36,18 +36,18 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     engine::render::lighting
     engine::render::window
 	
-	engine::internal::core::projects
-	engine::internal::core::reflection
+    engine::internal::core::projects
+    engine::internal::core::reflection
 
-	engine::internal::helpers
+    engine::internal::helpers
 
     engine::internal::render::graphic_api
     engine::internal::render::window
     
     # externals
-	glad
-	glfw
-	glm
+    glad
+    glfw
+    glm
     fmt::fmt
     spdlog
 )

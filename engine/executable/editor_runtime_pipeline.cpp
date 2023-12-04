@@ -2,9 +2,14 @@
 
 #include <iostream>
 
+#include <engine/core/components/component_registrar.h>
+#include <engine/core/entity/entity_manager.h>
 #include <engine/core/time/time_manager.h>
 #include <engine/debug/memory/memory_guard.h>
+#include <engine/internal/helpers/scoped_sequential_executor.h>
 #include <engine/internal/render/window/window_manager.h>
+
+#include <engine/core/components/component_manager.h>
 
 #include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
 
@@ -18,24 +23,29 @@ namespace engine
 	{
 		MEMORY_GUARD;
 
-		bool result = true;
+		ScopedSequentialExecutor executor(this);
 
 #if USE_LOGGER
-		result &= initializeLogger();
+		executor(&EditorRuntimePipeline::initializeLogger);
 #endif // #if USE_LOGGER
 		INFO_LOG("Initialization started.");
 
-		result &= initializeGLFW();
-		result &= initializeWindowManager();
-		result &= initializeGraphicAPI();
-		result &= initializeEditor();
-		result &= initializeTimeManager();
-		result &= initializeObjectsManager();
-		result &= initializeComponentsManager();
+		executor(&EditorRuntimePipeline::initializeGLFW);
+		executor(&EditorRuntimePipeline::initializeWindowManager);
+		executor(&EditorRuntimePipeline::initializeEditor);
+		executor(&EditorRuntimePipeline::initializeGraphicAPI);
+		executor(&EditorRuntimePipeline::initializeTimeManager);
+		executor(&EditorRuntimePipeline::initializeComponentRegistrar);
+		executor(&EditorRuntimePipeline::initializeEntityManager);
 
-		INFO_LOG("Initialization done.");
+		executor(&EditorRuntimePipeline::registerBuiltinComponents);
 
-		return result;
+		if (executor.result())
+			INFO_LOG("Initialization done.");
+		else
+			ERROR_LOG("Initialization failed!");
+
+		return executor.result();
 	}
 
 	void EditorRuntimePipeline::finalize()
@@ -69,9 +79,12 @@ namespace engine
 		bool result = true;
 
 		DEBUG_LOG("Initializing editor...");
-		result &= createEditorWindow();
 
-		return result;
+		ScopedSequentialExecutor executor(this);
+
+		executor(&EditorRuntimePipeline::createEditorWindow);
+
+		return executor.result();
 	}
 
 	bool EditorRuntimePipeline::createEditorWindow()
@@ -81,7 +94,10 @@ namespace engine
 		DEBUG_LOG("Creating editor window...");
 		m_editorWindow = m_windowManager->createWindow(400, 400, "Editor");
 		if (!m_editorWindow)
+		{
+			FATAL_LOG("Failed to create Editor window.");
 			return false;
+		}
 
 		m_windowManager->setWindowAsCurrentContext(m_editorWindow);
 		return true;

@@ -2,10 +2,7 @@
 
 #include <vector>
 
-#include <engine/internal/helpers/persistent_vector.h>
 #include <engine/render/window/window.h>
-
-class GLFWwindow;
 
 namespace engine
 {
@@ -18,7 +15,7 @@ namespace engine
 
 		// members
 	private:
-		explicit WindowManager() = default;
+		explicit WindowManager();
 
 	public:
 		~WindowManager();
@@ -35,6 +32,7 @@ namespace engine
 		void swapBuffers(const Window* window);
 
 	private:
-		PersistentVector<Window, 8> m_createdWindows; // it is rather unlikely to have more than 8 windows at once
+		class Internal;
+		std::unique_ptr<Internal> m_internal;
 	};
 } // namespace engine

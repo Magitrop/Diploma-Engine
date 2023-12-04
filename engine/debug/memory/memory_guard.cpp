@@ -77,7 +77,7 @@ namespace engine
 	thread_local std::size_t MemoryGuardStack::m_stackPosition = 0;
 } // namespace engine
 
-void* ::operator new(std::size_t size)
+[[nodiscard]] void* ::operator new(std::size_t size)
 {
 	return engine::MemoryGuardAllocator::allocate(size);
 }

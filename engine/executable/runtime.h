@@ -2,11 +2,8 @@
 
 #include <memory>
 
-#include <engine/executable/i_runtime_pipeline.h>
 #include <engine/internal/helpers/non_copyable.h>
 #include <engine/internal/helpers/non_movable.h>
-
-int main();
 
 namespace engine
 {
@@ -15,25 +12,24 @@ namespace engine
 	{
 		// friends
 	private:
-		friend int ::main();
+		friend class Main;
 
 		// members
 	private:
 		explicit Runtime();
 
 	public:
+		~Runtime();
+
 		bool isRunning() const;
 
 	private:
 		void initialize();
 		void run();
 
-		template<typename Pipeline>
-		void setPipeline()
-		{
-			m_runtimePipeline = std::make_shared<Pipeline>(std::move(Pipeline()));
-		}
+		void setPipeline(IRuntimePipeline* pipeline);
 
-		std::shared_ptr<IRuntimePipeline> m_runtimePipeline;
+		class Internal;
+		std::unique_ptr<Internal> m_internal;
 	};
 } // namespace engine

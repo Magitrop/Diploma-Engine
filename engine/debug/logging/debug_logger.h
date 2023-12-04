@@ -3,6 +3,7 @@
 #if USE_LOGGER
 #include <filesystem>
 #include <string>
+#include <memory>
 
 #include <engine/dependencies/spdlog/include/spdlog/spdlog.h>
 
@@ -30,6 +31,8 @@ namespace engine
 		explicit Logger(std::filesystem::path directory);
 
 	public:
+		~Logger();
+
 		[[nodiscard]] static std::shared_ptr<Logger> instance();
 
 		void setMinimumLevel(Level level);
@@ -37,7 +40,7 @@ namespace engine
 		void useFileLogging(bool enable);
 		void useConsoleLogging(bool enable);
 
-		// formatted log
+		// Formatted log.
 		template<typename... Args> void log(std::string message, Level level = Level::Info, Args... args);
 
 	private:
@@ -46,15 +49,8 @@ namespace engine
 
 		static std::shared_ptr<Logger> m_instance;
 
-		std::shared_ptr<spdlog::logger> m_fileLogger;
-
-		Level m_minLevel = Level::Debug;
-		bool m_immediatelyLogToFile = false;
-		bool m_useFileLogging = false;
-		bool m_useConsoleLogging = true;
-		std::filesystem::path m_loggingPath;
-
-		constexpr static const char* m_logFilenameTemplate = "log_%d_%m_%Y_%H_%M_%S.txt"; // day, month, year, hours, minutes, seconds
+		class Internal;
+		std::unique_ptr<Internal> m_internal;
 	};
 
 	template<typename ...Args>

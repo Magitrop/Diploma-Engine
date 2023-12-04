@@ -8,18 +8,23 @@ namespace engine
 	{
 		// friends
 	private:
+		friend class ProductionRuntimePipeline;
 		friend class ScopedTime;
 
 		// members
 	private:
+		explicit TimeManager();
+
 		void setDeltaTime(std::chrono::steady_clock::duration time);
 
 	public:
+		~TimeManager();
+
 		double deltaTime() const;
 		double timeSinceLaunch() const;
 
 	private:
-		std::chrono::steady_clock::duration m_deltaTime;
-		std::chrono::steady_clock::duration m_timeSinceLaunch;
+		class Internal;
+		std::unique_ptr<Internal> m_internal;
 	};
 } // namespace engine

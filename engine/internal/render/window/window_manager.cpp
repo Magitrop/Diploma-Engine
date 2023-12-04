@@ -1,16 +1,39 @@
 #include "window_manager.h"
 
 #include <engine/debug/memory/memory_guard.h>
-#include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
+#include <engine/internal/helpers/persistent_vector.h>
 #include <engine/render/window/window.h>
+
+#include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
 
 namespace engine
 {
-	const Window* WindowManager::createWindow(std::size_t width,
-		std::size_t height,
-		std::string label /* = "" */,
-		bool isResizable /* = true */,
-		const Window* sharedContext /* = nullptr */)
+	class WindowManager::Internal final
+	{
+	public:
+		Internal() = default;
+		~Internal();
+
+		const Window* createWindow(std::size_t width,
+								   std::size_t height,
+								   std::string label = "",
+								   bool isResizable = true,
+								   const Window* sharedContext = nullptr);
+		const Window* getWindowByID(std::size_t id) const;
+
+		void setWindowAsCurrentContext(const Window* window);
+		void setWindowTitle(const Window* window, const char* title);
+		void swapBuffers(const Window* window);
+
+	private:
+		PersistentVector<Window, 8> m_createdWindows; // it is rather unlikely to have more than 8 windows at once
+	};
+
+	const Window* WindowManager::Internal::createWindow(std::size_t width,
+											  std::size_t height,
+											  std::string label /* = "" */,
+											  bool isResizable /* = true */,
+											  const Window* sharedContext /* = nullptr */)
 	{
 		MEMORY_GUARD;
 
@@ -41,25 +64,28 @@ namespace engine
 		return &m_createdWindows.push(std::move(window));
 	}
 
-	WindowManager::~WindowManager()
+	WindowManager::Internal::~Internal()
 	{
 		MEMORY_GUARD;
 
-		for (auto& page : m_createdWindows)
-			for (auto& window : *page)
-				glfwDestroyWindow(window.get().m_window);
+		for (auto& window : m_createdWindows)
+		{
+			glfwDestroyWindow(window.m_window);
+			TRACE_LOG("Window destructed.");
+		}
 	}
 
-	const engine::Window* WindowManager::getWindowByID(std::size_t id) const
+	const engine::Window* WindowManager::Internal::getWindowByID(std::size_t id) const
 	{
-		/*if (id < m_createdWindows.size())
+		if (id < m_createdWindows.size())
 		{
-			return &m_createdWindows[id];
-		}*/
+			return &*m_createdWindows.at(id);
+		}
+		WARNING_LOG("Failed to find a window with ID {}.", id);
 		return nullptr;
 	}
 
-	void WindowManager::setWindowAsCurrentContext(const Window* window)
+	void WindowManager::Internal::setWindowAsCurrentContext(const Window* window)
 	{
 		MEMORY_GUARD;
 
@@ -67,7 +93,7 @@ namespace engine
 			glfwMakeContextCurrent(window->m_window);
 	}
 
-	void WindowManager::setWindowTitle(const Window* window, const char* title)
+	void WindowManager::Internal::setWindowTitle(const Window* window, const char* title)
 	{
 		MEMORY_GUARD;
 
@@ -75,11 +101,48 @@ namespace engine
 			glfwSetWindowTitle(window->m_window, title);
 	}
 
-	void WindowManager::swapBuffers(const Window* window)
+	void WindowManager::Internal::swapBuffers(const Window* window)
 	{
 		MEMORY_GUARD;
 
 		if (window && window->isValid())
 			glfwSwapBuffers(window->m_window);
+	}
+
+	WindowManager::WindowManager()
+	{
+		m_internal = std::make_unique<Internal>();
+	}
+
+	WindowManager::~WindowManager()
+	{}
+
+	const Window* WindowManager::createWindow(std::size_t width,
+											  std::size_t height, 
+											  std::string label, 
+											  bool isResizable, 
+											  const Window* sharedContext)
+	{
+		return m_internal->createWindow(width, height, label, isResizable, sharedContext);
+	}
+
+	const Window* WindowManager::getWindowByID(std::size_t id) const
+	{
+		return m_internal->getWindowByID(id);
+	}
+
+	void WindowManager::setWindowAsCurrentContext(const Window* window)
+	{
+		m_internal->setWindowAsCurrentContext(window);
+	}
+
+	void WindowManager::setWindowTitle(const Window* window, const char* title)
+	{
+		m_internal->setWindowTitle(window, title);
+	}
+
+	void WindowManager::swapBuffers(const Window* window)
+	{
+		m_internal->swapBuffers(window);
 	}
 } // namespace engine

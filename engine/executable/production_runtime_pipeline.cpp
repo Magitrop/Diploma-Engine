@@ -2,8 +2,9 @@
 
 #include <iostream>
 
-#include <engine/core/components/components_manager.h>
-#include <engine/core/objects/objects_manager.h>
+#include <engine/core/components/component.h>
+#include <engine/core/components/component_registrar.h>
+#include <engine/core/entity/entity_manager.h>
 #include <engine/core/time/time_manager.h>
 
 #include <engine/debug/logging/debug_logger.h>
@@ -41,7 +42,7 @@ namespace engine
 		std::filesystem::path loggingDirectory = std::filesystem::current_path();
 		loggingDirectory += "\\logs\\";
 
-		m_logger = std::make_shared<Logger>(std::move(Logger(loggingDirectory)));
+		m_logger = std::shared_ptr<Logger>(new Logger(loggingDirectory));
 		m_logger->setMinimumLevel(Logger::Level::Debug);
 		m_logger->useFileLogging(false);
 
@@ -72,23 +73,23 @@ namespace engine
 		return true;
 	}
 
+	bool ProductionRuntimePipeline::initializeWindowManager()
+	{
+		MEMORY_GUARD;
+
+		DEBUG_LOG("Initializing window manager...");
+		m_windowManager = std::shared_ptr<WindowManager>(new WindowManager());
+		return m_windowManager != nullptr;
+	}
+
 	bool ProductionRuntimePipeline::initializeGraphicAPI()
 	{
 		MEMORY_GUARD;
 
 		// TODO: abstract graphic API
 		DEBUG_LOG("Initializing graphic API...");
-		m_graphicAPI = std::make_shared<GladGraphicAPI>(std::move(GladGraphicAPI()));
+		m_graphicAPI = std::shared_ptr<GladGraphicAPI>(new GladGraphicAPI());
 		return m_graphicAPI->initialize();
-	}
-
-	bool ProductionRuntimePipeline::initializeWindowManager()
-	{
-		MEMORY_GUARD;
-
-		DEBUG_LOG("Initializing window manager...");
-		m_windowManager = std::make_shared<WindowManager>(std::move(WindowManager()));
-		return m_windowManager != nullptr;
 	}
 
 	bool ProductionRuntimePipeline::initializeTimeManager()
@@ -96,22 +97,37 @@ namespace engine
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Initializing time manager...");
-		m_timeManager = std::make_shared<TimeManager>(std::move(TimeManager()));
+		m_timeManager = std::shared_ptr<TimeManager>(new TimeManager());
 		return m_timeManager != nullptr;
 	}
 
-	bool ProductionRuntimePipeline::initializeObjectsManager()
+	bool ProductionRuntimePipeline::initializeComponentRegistrar()
 	{
-		DEBUG_LOG("Initializing objects manager...");
-		m_objectsManager = std::make_shared<ObjectsManager>(std::move(ObjectsManager()));
-		return m_objectsManager != nullptr;
+		MEMORY_GUARD;
+
+		DEBUG_LOG("Initializing component registrar...");
+		m_componentRegistrar = std::shared_ptr<ComponentRegistrar>(new ComponentRegistrar());
+		return m_componentRegistrar != nullptr;
 	}
 
-	bool ProductionRuntimePipeline::initializeComponentsManager()
+	bool ProductionRuntimePipeline::initializeEntityManager()
 	{
-		DEBUG_LOG("Initializing components manager...");
-		m_componentsManager = std::make_shared<ComponentsManager>(std::move(ComponentsManager()));
-		return m_componentsManager != nullptr;
+		MEMORY_GUARD;
+
+		DEBUG_LOG("Initializing entity manager...");
+		m_entityManager = std::shared_ptr<EntityManager>(new EntityManager(m_componentRegistrar));
+		return m_entityManager != nullptr;
+	}
+
+	bool ProductionRuntimePipeline::registerBuiltinComponents()
+	{
+		MEMORY_GUARD;
+
+		DEBUG_LOG("Registering built-in components...");
+
+		//m_componentRegistrar->registerComponent<Comp>(std::shared_ptr<Comp>(new Comp()));
+
+		return true;
 	}
 
 	void ProductionRuntimePipeline::finalizeGLFW()

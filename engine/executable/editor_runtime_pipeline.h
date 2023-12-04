@@ -2,8 +2,6 @@
 
 #include <engine/executable/production_runtime_pipeline.h>
 
-#include <memory>
-
 namespace engine
 {
 	class Window;
@@ -11,7 +9,7 @@ namespace engine
 	{
 		// friends
 	private:
-		friend class Runtime;
+		friend class Main;
 
 		// members
 	private:
