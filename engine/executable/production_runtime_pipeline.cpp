@@ -4,6 +4,7 @@
 
 #include <engine/core/components/component.h>
 #include <engine/core/components/component_registrar.h>
+#include <engine/core/components/transform_component.h>
 #include <engine/core/entity/entity_manager.h>
 #include <engine/core/time/time_manager.h>
 
@@ -12,7 +13,7 @@
 
 #include <engine/executable/runtime.h>
 
-#include <engine/internal/render/graphic_api/glad_graphic_api.h>
+#include <engine/internal/render/graphics/glad/glad_graphic_api.h>
 #include <engine/internal/render/window/window_manager.h>
 
 #include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
@@ -32,6 +33,7 @@ namespace engine
 
 	void ProductionRuntimePipeline::run()
 	{
+		MEMORY_GUARD;
 	}
 
 #if USE_LOGGER
@@ -125,7 +127,7 @@ namespace engine
 
 		DEBUG_LOG("Registering built-in components...");
 
-		//m_componentRegistrar->registerComponent<Comp>(std::shared_ptr<Comp>(new Comp()));
+		m_componentRegistrar->registerComponent<TransformComponent>(std::make_shared<TransformComponent>());
 
 		return true;
 	}

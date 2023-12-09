@@ -2,11 +2,15 @@
 
 namespace engine
 {
-	EntityID::EntityID(std::size_t id /* = static_cast<std::size_t>(-1) */)
+	EntityID::EntityID(std::size_t id)
 		: m_id(id)
 	{}
 
-	std::size_t EntityID::getID() const
+	EntityID::EntityID()
+		: m_id(static_cast<std::size_t>(-1))
+	{}
+
+	std::size_t EntityID::id() const
 	{
 		return m_id;
 	}

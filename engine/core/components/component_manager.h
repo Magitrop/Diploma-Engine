@@ -1,20 +1,30 @@
 #pragma once
 
+#include <engine/core/components/component.h>
+#include <engine/core/entity/entity.h>
+
 #include <cstddef>
 
 namespace engine
 {
-	//сделать(синглтон ? ) ComponentRegistrar который будет хранить все ID компонентов
-	//встроенные компоненты регистрировать вручную при инициализации
-	//кастомные компоненты будут генерироваться с функцией вроде registerComponent которая будет присваивать им очередной ID
-
 	class ComponentManager
 	{
 	private:
 		friend class EntityManager;
+		friend class ComponentRegistrar;
 
 	protected:
 		virtual ~ComponentManager() = 0;
+
+		// TODO: should be deleted and replaced by an automatized component initialization
+		virtual void attachComponent(ComponentID component) = 0;
+		// TODO: should be deleted and replaced by an automatized component finalization
+		virtual void detachComponent(ComponentID component) = 0;
+
+		virtual void onComponentAttached(EntityID entity, ComponentID component) {}
+		virtual void onComponentDetached(EntityID entity, ComponentID component) {}
+
+	private:
 		static std::size_t ID;
 	};
 } // namespace engine

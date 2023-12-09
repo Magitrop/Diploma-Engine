@@ -13,10 +13,14 @@ namespace engine
 		friend class EntityManager;
 
 		// members
-	public:
-		ComponentID(std::size_t index = static_cast<std::size_t>(-1));
+	private:
+		explicit ComponentID(std::size_t index);
 
-		std::size_t getID() const;
+	public:
+		// Creates an invalid ComponentID.
+		explicit ComponentID();
+
+		std::size_t id() const;
 		operator std::size_t() const;
 
 		bool isValid() const;

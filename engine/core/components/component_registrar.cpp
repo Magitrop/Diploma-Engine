@@ -37,9 +37,7 @@ namespace engine
 			return found.getIndex();
 		}
 
-		std::size_t index = static_cast<std::size_t>(-1);
-		m_registeredComponents.push(std::move(manager), &index);
-		return index;
+		return m_registeredComponents.push(std::move(manager)).getIndex();
 	}
 
 	void ComponentRegistrar::Internal::unregisterComponent(std::shared_ptr<ComponentManager> manager)
@@ -75,8 +73,8 @@ namespace engine
 	std::shared_ptr<ComponentManager> ComponentRegistrar::Internal::getComponentManager(std::size_t uniqueComponentID)
 	{
 		auto it = m_registeredComponents.at(uniqueComponentID);
-		if (it != m_registeredComponents.end())
-			return *it;
+		if (it != m_registeredComponents.end() && !it->empty())
+			return it->get();
 
 		ERROR_LOG("Cannot get the manager for this component. The component was not properly registered.");
 		return nullptr;

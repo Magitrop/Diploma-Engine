@@ -2,11 +2,15 @@
 
 namespace engine
 {
-	ComponentID::ComponentID(std::size_t id /* = static_cast<std::size_t>(-1) */)
+	ComponentID::ComponentID(std::size_t id)
 		: m_id(id)
 	{}
 
-	std::size_t ComponentID::getID() const
+	ComponentID::ComponentID()
+		: m_id(static_cast<std::size_t>(-1))
+	{}
+
+	std::size_t ComponentID::id() const
 	{
 		return m_id;
 	}

@@ -61,7 +61,7 @@ namespace engine
 			return nullptr;
 		}
 
-		return &m_createdWindows.push(std::move(window));
+		return &m_createdWindows.push(std::move(window))->get();
 	}
 
 	WindowManager::Internal::~Internal()
@@ -70,7 +70,7 @@ namespace engine
 
 		for (auto& window : m_createdWindows)
 		{
-			glfwDestroyWindow(window.m_window);
+			glfwDestroyWindow(window.get().m_window);
 			TRACE_LOG("Window destructed.");
 		}
 	}
@@ -79,7 +79,7 @@ namespace engine
 	{
 		if (id < m_createdWindows.size())
 		{
-			return &*m_createdWindows.at(id);
+			return &m_createdWindows.at(id)->get();
 		}
 		WARNING_LOG("Failed to find a window with ID {}.", id);
 		return nullptr;

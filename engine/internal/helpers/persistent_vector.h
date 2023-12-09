@@ -54,13 +54,14 @@ namespace engine
 				, m_end(end)
 			{}
 		public:
-			Type& operator * ();
-			Type* operator -> ();
-			const Type& operator * () const;
-			const Type* operator -> () const;
+			Slot& operator * ();
+			Slot* operator -> ();
+			const Slot& operator * () const;
+			const Slot* operator -> () const;
 			bool operator != (const Iterator& other) const;
 			bool operator == (const Iterator& other) const;
 			Iterator& operator ++();
+			Iterator& operator +(std::size_t diff);
 			[[nodiscard]] std::size_t getIndex() const; // Returns an absolute index of the value. Does not take empty slots into account.
 
 		private:
@@ -75,14 +76,14 @@ namespace engine
 	public:
 		constexpr explicit PersistentVector();
 
-		// Returns an index at which the value was emplaced.
-		Type& push(Type& value, std::size_t* index = nullptr);
-		// Returns an index at which the value was emplaced.
-		Type& push(Type&& value, std::size_t* index = nullptr);
+		// Returns an iterator at which the value was emplaced.
+		Iterator push(Type& value);
+		// Returns an iterator at which the value was emplaced.
+		Iterator push(Type&& value);
 		void remove(const Iterator at);
 		void clear();
 		// Clears the vector and invalidates all its iterators, pointers and references.
-		// Use only if you sure what you are doing. Otherwise, consider using clear().
+		// Use only if you are sure what you are doing. Otherwise, consider using clear().
 		void forceClear();
 
 		[[nodiscard]] const Iterator begin() const;
@@ -97,7 +98,7 @@ namespace engine
 		[[nodiscard]] std::size_t size() const;
 
 	private:
-		Type& pushInternal(Slot&& slot, std::size_t* index = nullptr);
+		Iterator pushInternal(Slot&& slot);
 		void createPage();
 
 		struct EmptyIndex
@@ -119,19 +120,19 @@ namespace engine
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	Type& PersistentVector<Type, PageCapacity>::push(Type& value, std::size_t* index /* = nullptr */)
+	PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::push(Type& value)
 	{
-		return pushInternal(std::move(Slot(value)), index);
+		return pushInternal(std::move(Slot(value)));
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	Type& PersistentVector<Type, PageCapacity>::push(Type&& value, std::size_t* index /* = nullptr */)
+	PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::push(Type&& value)
 	{
-		return pushInternal(std::move(Slot(std::move(value))), index);
+		return pushInternal(std::move(Slot(std::move(value))));
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	Type& PersistentVector<Type, PageCapacity>::pushInternal(Slot&& slot, std::size_t* index /* = nullptr */)
+	PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::pushInternal(Slot&& slot)
 	{
 		++m_count;
 		if (m_emptyIndices.empty())
@@ -147,9 +148,7 @@ namespace engine
 
 			++m_currentIndex;
 
-			if (index)
-				*index = (m_pages.size() - 1) * PageCapacity + (m_currentIndex - 1);
-			return result.get();
+			return Iterator(std::prev(m_pages.end()), m_currentIndex - 1, m_pages.end());
 		}
 		else
 		{
@@ -159,9 +158,7 @@ namespace engine
 			auto& result = (*empty.page)->slots[empty.index];
 			result = std::move(slot);
 
-			if (index)
-				*index = ((*empty.page)->pageIndex * PageCapacity) + empty.index;
-			return result.get();
+			return Iterator(empty.page, empty.index, m_pages.end());
 		}
 	}
 
@@ -238,8 +235,7 @@ namespace engine
 	{
 		for (auto it = begin(); it != end(); ++it)
 		{
-			auto v = *it;
-			if (v == value)
+			if (it->get() == value)
 			{
 				return it;
 			}
@@ -296,7 +292,8 @@ namespace engine
 
 	template<typename Type, PageCapacityType PageCapacity>
 	PersistentVector<Type, PageCapacity>::Slot::Slot()
-		: m_empty(true)
+		: m_value(Type())
+		, m_empty(true)
 	{}
 
 	template<typename Type, PageCapacityType PageCapacity>
@@ -330,31 +327,31 @@ namespace engine
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	Type& PersistentVector<Type, PageCapacity>::Iterator::operator * ()
+	PersistentVector<Type, PageCapacity>::Slot& PersistentVector<Type, PageCapacity>::Iterator::operator * ()
 	{
-		return (*m_page)->slots[m_index].get();
+		return (*m_page)->slots[m_index];
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	const Type& PersistentVector<Type, PageCapacity>::Iterator::operator * () const
+	const typename PersistentVector<Type, PageCapacity>::Slot& PersistentVector<Type, PageCapacity>::Iterator::operator * () const
 	{
-		return (*m_page)->slots[m_index].get();
+		return (*m_page)->slots[m_index];
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	Type* PersistentVector<Type, PageCapacity>::Iterator::operator -> ()
+	typename PersistentVector<Type, PageCapacity>::Slot* PersistentVector<Type, PageCapacity>::Iterator::operator -> ()
 	{
-		return &(*m_page)->slots[m_index].get();
+		return &(*m_page)->slots[m_index];
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	const Type* PersistentVector<Type, PageCapacity>::Iterator::operator -> () const
+	const typename PersistentVector<Type, PageCapacity>::Slot* PersistentVector<Type, PageCapacity>::Iterator::operator -> () const
 	{
-		return &(*m_page)->slots[m_index].get();
+		return &(*m_page)->slots[m_index];
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	PersistentVector<Type, PageCapacity>::Iterator& PersistentVector<Type, PageCapacity>::Iterator::operator ++()
+	typename PersistentVector<Type, PageCapacity>::Iterator& PersistentVector<Type, PageCapacity>::Iterator::operator ++()
 	{
 		if (m_page == m_end)
 			return *this;
@@ -371,6 +368,24 @@ namespace engine
 			if (m_page == m_end)
 				break;
 		} while ((*m_page)->slots[m_index].empty());
+		return *this;
+	}
+
+	template<typename Type, PageCapacityType PageCapacity>
+	PersistentVector<Type, PageCapacity>::Iterator& PersistentVector<Type, PageCapacity>::Iterator::operator +(std::size_t diff)
+	{
+		for (std::size_t i = 0; i < diff; ++i)
+		{
+			if (m_page == m_end)
+				break;
+
+			++m_index;
+			if (m_index >= PageCapacity)
+			{
+				m_index = 0;
+				std::advance(m_page, 1);
+			}
+		}
 		return *this;
 	}
 

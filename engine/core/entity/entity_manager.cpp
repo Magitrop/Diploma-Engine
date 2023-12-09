@@ -59,7 +59,7 @@ namespace engine
 			return ComponentID(static_cast<std::size_t>(-1));
 		}
 
-		auto& entityComponents = m_entities.at(entity)->components;
+		auto& entityComponents = m_entities.at(entity)->get().components;
 		auto& componentOwners = m_componentVectors[uniqueComponentID].componentOwners;
 
 		// already attached
@@ -69,8 +69,11 @@ namespace engine
 			return ComponentID(static_cast<std::size_t>(-1));
 		}
 
-		std::size_t result = componentOwners.push(entity);
+		ComponentID result = ComponentID(componentOwners.push(entity).getIndex());
 		entityComponents[uniqueComponentID] = 1;
+
+		getComponentManager(uniqueComponentID)->attachComponent(result);
+		getComponentManager(uniqueComponentID)->onComponentAttached(entity, result);
 
 		return result;
 	}
@@ -83,7 +86,7 @@ namespace engine
 			return;
 		}
 
-		auto& entityComponents = m_entities.at(entity)->components;
+		auto& entityComponents = m_entities.at(entity)->get().components;
 		auto& componentOwners = m_componentVectors[uniqueComponentID].componentOwners;
 
 		// already detached
@@ -93,7 +96,13 @@ namespace engine
 			return;
 		}
 
-		componentOwners.remove(componentOwners.find(entity));
+		auto owner = componentOwners.find(entity);
+
+		ComponentID component = ComponentID(owner.getIndex());
+		getComponentManager(uniqueComponentID)->onComponentDetached(entity, component);
+		getComponentManager(uniqueComponentID)->detachComponent(component);
+
+		componentOwners.remove(owner);
 		entityComponents[uniqueComponentID] = 0;
 	}
 
@@ -110,7 +119,7 @@ namespace engine
 		std::size_t index = 0;
 		for (const auto& owner : componentOwners)
 		{
-			if (owner == entity)
+			if (owner.get() == entity)
 				return ComponentID(index);
 			++index;
 		}
@@ -127,7 +136,7 @@ namespace engine
 			return false;
 		}
 
-		return m_entities.at(entity)->components[uniqueComponentID];
+		return m_entities.at(entity)->get().components[uniqueComponentID];
 	}
 
 	std::shared_ptr<ComponentManager> EntityManager::Internal::getComponentManager(std::size_t uniqueComponentID)
@@ -144,9 +153,7 @@ namespace engine
 
 	EntityID EntityManager::Internal::createEntity()
 	{
-		std::size_t index = static_cast<std::size_t>(-1);
-		m_entities.push(std::move(EntityWrapper()), &index);
-		return EntityID(index);
+		return EntityID(m_entities.push(EntityWrapper()).getIndex());
 	}
 
 	void EntityManager::Internal::destroyEntity(EntityID entity)

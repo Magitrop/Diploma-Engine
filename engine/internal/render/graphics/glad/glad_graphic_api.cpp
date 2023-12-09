@@ -1,5 +1,7 @@
 #include "glad_graphic_api.h"
 
+#include <sstream>
+
 #include <engine/debug/logging/debug_logger.h>
 
 #include <engine/dependencies/gl/glad/include/glad/glad.h>

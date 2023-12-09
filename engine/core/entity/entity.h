@@ -5,7 +5,7 @@
 namespace engine
 {
 	// An ID-only substitution for the actual Entity in ECS.
-	// Does not store its own Components. Use engine::EntityManager to access them instead.
+	// Does not store its own Components. Use EntityManager to access them instead.
 	class EntityID final
 	{
 		// friends
@@ -13,10 +13,14 @@ namespace engine
 		friend class EntityManager;
 
 		// members
-	public:
-		EntityID(std::size_t index = static_cast<std::size_t>(-1));
+	private:
+		explicit EntityID(std::size_t index);
 
-		std::size_t getID() const;
+	public:
+		// Creates an invalid EntityID.
+		explicit EntityID();
+
+		std::size_t id() const;
 		operator std::size_t() const;
 
 		bool isValid() const;

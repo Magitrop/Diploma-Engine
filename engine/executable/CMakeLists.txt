@@ -17,9 +17,9 @@ target_compile_definitions(executable PUBLIC USE_MEMORY_GUARD)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     engine::core::components
+    engine::core::entity
     engine::core::input
     engine::core::math
-    engine::core::entity
     engine::core::resources
     engine::core::time
 
@@ -31,18 +31,19 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     engine::editor::gui
     engine::editor::initialization
 
-    engine::render::camera
-    engine::render::graphics
-    engine::render::lighting
-    engine::render::window
-	
+    engine::internal::core::constants
     engine::internal::core::projects
     engine::internal::core::reflection
 
     engine::internal::helpers
 
-    engine::internal::render::graphic_api
+    engine::internal::render::graphics::glad_api
+    engine::internal::render::graphics
     engine::internal::render::window
+
+    engine::render::camera
+    engine::render::lighting
+    engine::render::window
     
     # externals
     glad
