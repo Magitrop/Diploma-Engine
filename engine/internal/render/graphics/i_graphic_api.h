@@ -4,9 +4,7 @@ namespace engine
 {
 	class IGraphicAPI
 	{
-		friend class ProductionRuntimePipeline;
-
-	protected:
+	public:
 		virtual bool initialize() = 0;
 		virtual void finalize() = 0;
 	};

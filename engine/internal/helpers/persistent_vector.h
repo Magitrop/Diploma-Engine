@@ -1,9 +1,12 @@
 #pragma once
 
-#include <queue>
-#include <list>
 #include <array>
+#include <list>
 #include <memory>
+#include <queue>
+
+#include <engine/debug/logging/debug_logger.h>
+#include <engine/internal/helpers/assert.h>
 
 namespace engine
 {
@@ -41,6 +44,7 @@ namespace engine
 		};
 		using Pages = std::list<std::shared_ptr<Page>>;
 
+	public:
 		class Iterator final
 		{
 		private:
@@ -73,7 +77,6 @@ namespace engine
 			PageCapacityType m_index;
 		};
 
-	public:
 		constexpr explicit PersistentVector();
 
 		// Returns an iterator at which the value was emplaced.
@@ -90,12 +93,14 @@ namespace engine
 		[[nodiscard]] const Iterator end() const;
 		[[nodiscard]] Iterator begin();
 		[[nodiscard]] Iterator end();
-		[[nodiscard]] Iterator find(const Type& value);
+		[[nodiscard]] Iterator find(const Type& value) const;
 
 		[[nodiscard]] Iterator at(std::size_t index);
 		[[nodiscard]] const Iterator at(std::size_t index) const;
 
 		[[nodiscard]] std::size_t size() const;
+
+		[[nodiscard]] std::size_t getNextEmptyIndex() const;
 
 	private:
 		Iterator pushInternal(Slot&& slot);
@@ -209,7 +214,7 @@ namespace engine
 	template<typename Type, PageCapacityType PageCapacity>
 	const typename PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::begin() const
 	{
-		return Iterator(m_pages.begin(), 0, m_pages.end());
+		return m_count == 0 ? end() : Iterator(m_pages.begin(), 0, m_pages.end());
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
@@ -231,10 +236,14 @@ namespace engine
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	typename PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::find(const Type& value)
+	typename PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::find(const Type& value) const
 	{
 		for (auto it = begin(); it != end(); ++it)
 		{
+#if IS_DEBUG
+			if (it->empty())
+				continue;
+#endif // #if IS_DEBUG
 			if (it->get() == value)
 			{
 				return it;
@@ -284,6 +293,23 @@ namespace engine
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
+	std::size_t PersistentVector<Type, PageCapacity>::getNextEmptyIndex() const
+	{
+		if (m_emptyIndices.empty())
+		{
+			if (m_currentIndex >= PageCapacity)
+				return (m_pages.back()->pageIndex + 1) * PageCapacity;
+			else
+				return m_pages.back()->pageIndex * PageCapacity + m_currentIndex;
+		}
+		else
+		{
+			EmptyIndex empty = m_emptyIndices.front();
+			return (*empty.page)->pageIndex * PageCapacity + empty.index;
+		}
+	}
+
+	template<typename Type, PageCapacityType PageCapacity>
 	void PersistentVector<Type, PageCapacity>::createPage()
 	{
 		auto page = m_pages.emplace_back(std::make_shared<Page>());
@@ -311,12 +337,16 @@ namespace engine
 	template<typename Type, PageCapacityType PageCapacity>
 	Type& PersistentVector<Type, PageCapacity>::Slot::get()
 	{
+		DEBUG_ASSERT(!m_empty);
+
 		return m_value;
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
 	const Type& PersistentVector<Type, PageCapacity>::Slot::get() const
 	{
+		DEBUG_ASSERT(!m_empty);
+
 		return m_value;
 	}
 
@@ -327,26 +357,34 @@ namespace engine
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	PersistentVector<Type, PageCapacity>::Slot& PersistentVector<Type, PageCapacity>::Iterator::operator * ()
+	typename PersistentVector<Type, PageCapacity>::Slot& PersistentVector<Type, PageCapacity>::Iterator::operator * ()
 	{
+		DEBUG_ASSERT(m_page != m_end);
+
 		return (*m_page)->slots[m_index];
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
 	const typename PersistentVector<Type, PageCapacity>::Slot& PersistentVector<Type, PageCapacity>::Iterator::operator * () const
 	{
+		DEBUG_ASSERT(m_page != m_end);
+
 		return (*m_page)->slots[m_index];
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
 	typename PersistentVector<Type, PageCapacity>::Slot* PersistentVector<Type, PageCapacity>::Iterator::operator -> ()
 	{
+		DEBUG_ASSERT(m_page != m_end);
+
 		return &(*m_page)->slots[m_index];
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
 	const typename PersistentVector<Type, PageCapacity>::Slot* PersistentVector<Type, PageCapacity>::Iterator::operator -> () const
 	{
+		DEBUG_ASSERT(m_page != m_end);
+
 		return &(*m_page)->slots[m_index];
 	}
 
@@ -372,7 +410,7 @@ namespace engine
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	PersistentVector<Type, PageCapacity>::Iterator& PersistentVector<Type, PageCapacity>::Iterator::operator +(std::size_t diff)
+	typename PersistentVector<Type, PageCapacity>::Iterator& PersistentVector<Type, PageCapacity>::Iterator::operator +(std::size_t diff)
 	{
 		for (std::size_t i = 0; i < diff; ++i)
 		{

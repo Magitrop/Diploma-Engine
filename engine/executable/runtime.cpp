@@ -12,7 +12,7 @@ namespace engine
 
 		bool isRunning() const;
 
-		void initialize();
+		bool initialize();
 		void run();
 
 		void setPipeline(IRuntimePipeline* pipeline);
@@ -31,9 +31,9 @@ namespace engine
 		return m_runtimePipeline->isRunning();
 	}
 
-	void Runtime::Internal::initialize()
+	bool Runtime::Internal::initialize()
 	{
-		m_runtimePipeline->initialize();
+		return m_runtimePipeline->initialize();
 	}
 
 	void Runtime::Internal::run()
@@ -59,9 +59,9 @@ namespace engine
 		return m_internal->isRunning();
 	}
 
-	void Runtime::initialize()
+	bool Runtime::initialize()
 	{
-		m_internal->initialize();
+		return m_internal->initialize();
 	}
 
 	void Runtime::run()

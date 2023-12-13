@@ -21,16 +21,16 @@ namespace engine
 	public:
 		~WindowManager();
 
-		const Window* createWindow(std::size_t width,
+		WindowID createWindow(std::size_t width,
 								   std::size_t height,
 								   std::string label = "",
 								   bool isResizable = true,
-								   const Window* sharedContext = nullptr);
-		const Window* getWindowByID(std::size_t id) const;
+								   WindowID sharedContext = WindowID());
+		WindowID getCurrentContextWindow() const;
 
-		void setWindowAsCurrentContext(const Window* window);
-		void setWindowTitle(const Window* window, const char* title);
-		void swapBuffers(const Window* window);
+		void setWindowAsCurrentContext(WindowID window);
+		void setWindowTitle(WindowID window, const char* title);
+		void swapBuffers(WindowID window);
 
 	private:
 		class Internal;

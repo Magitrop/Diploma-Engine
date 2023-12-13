@@ -4,50 +4,26 @@
 
 namespace engine
 {
-	Window::Window(
-		std::size_t width,
-		std::size_t height,
-		std::string label /* = "" */,
-		bool isResizable /* = true */,
-		GLFWwindow* window /* = nullptr */)
-		: m_width(width)
-		, m_height(height)
-		, m_isResizable(isResizable)
-		, m_window(window)
-		, m_isValid(true)
-	{
-		if (width == 0 || height == 0 || window == nullptr)
-		{
-			m_isValid = false;
-			return;
-		}
-	}
-
-	Window::Window()
-		: m_width(0)
-		, m_height(0)
-		, m_isResizable(false)
-		, m_isValid(false)
-		, m_window(nullptr)
+	WindowID::WindowID(std::size_t index)
+		: m_id(index)
 	{}
 
-	std::size_t Window::width() const
+	WindowID::WindowID()
+		: m_id(static_cast<std::size_t>(-1))
+	{}
+
+	std::size_t WindowID::id() const
 	{
-		return m_width;
+		return m_id;
 	}
 
-	std::size_t Window::height() const
+	WindowID::operator std::size_t() const
 	{
-		return m_height;
+		return m_id;
 	}
 
-	bool Window::isResizable() const
+	bool WindowID::isValid() const
 	{
-		return m_isResizable;
-	}
-
-	bool Window::isValid() const
-	{
-		return m_isValid;
+		return m_id != static_cast<std::size_t>(-1);
 	}
 } // namespace engine

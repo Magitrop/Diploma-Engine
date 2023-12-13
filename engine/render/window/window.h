@@ -8,35 +8,21 @@ class GLFWwindow;
 
 namespace engine
 {
-	// A non-owning wrapper for the GLFW window.
-	class Window final
+	// A lightweight wrapper for an actual window in the Window Manager.
+	class WindowID final
 	{
-		// friends
-	private:
-		friend class WindowManager;
-
-		// members
-	private:
-		explicit Window(std::size_t width,
-						std::size_t height,
-						std::string label = "",
-						bool isResizable = true,
-						GLFWwindow* window = nullptr);
-
 	public:
-		explicit Window();
+		explicit WindowID(std::size_t index);
 
-		std::size_t width() const;
-		std::size_t height() const;
-		bool isResizable() const;
+		// Creates an invalid WindowID.
+		explicit WindowID();
+
+		std::size_t id() const;
+		operator std::size_t() const;
+
 		bool isValid() const;
 
 	private:
-		std::size_t m_width;
-		std::size_t m_height;
-		bool m_isResizable;
-		bool m_isValid;
-
-		GLFWwindow* m_window;
+		std::size_t m_id;
 	};
 } // namespace engine

@@ -24,7 +24,7 @@ namespace engine
 		bool isRunning() const;
 
 	private:
-		void initialize();
+		bool initialize();
 		void run();
 
 		void setPipeline(IRuntimePipeline* pipeline);

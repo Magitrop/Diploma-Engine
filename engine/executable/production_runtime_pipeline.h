@@ -10,7 +10,9 @@ namespace engine
 	class ComponentRegistrar;
 	class EntityManager;
 	class IGraphicAPI;
+	class IRenderPipeline;
 	class Logger;
+	class ResourceManager;
 	class TimeManager;
 	class WindowManager;
 	class ProductionRuntimePipeline : public IRuntimePipeline
@@ -39,16 +41,23 @@ namespace engine
 
 		[[nodiscard]] bool registerBuiltinComponents();
 
+		[[nodiscard]] bool initializeResourceManager();
+		[[nodiscard]] bool initializeRenderPipeline();
+
+		[[nodiscard]] bool registerBuiltinResources();
+
 		void finalizeGLFW();
 		void finalizeGraphicAPI();
 
 		[[nodiscard]] ScopedTime startDeltaTimer();
 
-		std::shared_ptr<IGraphicAPI> m_graphicAPI;
-		std::shared_ptr<WindowManager> m_windowManager;
-		std::shared_ptr<TimeManager> m_timeManager;
-		std::shared_ptr<EntityManager> m_entityManager;
 		std::shared_ptr<Logger> m_logger;
+		std::shared_ptr<WindowManager> m_windowManager;
+		std::shared_ptr<IGraphicAPI> m_graphicAPI;
+		std::shared_ptr<TimeManager> m_timeManager;
 		std::shared_ptr<ComponentRegistrar> m_componentRegistrar;
+		std::shared_ptr<EntityManager> m_entityManager;
+		std::shared_ptr<ResourceManager> m_resourceManager;
+		std::shared_ptr<IRenderPipeline> m_renderPipeline;
 	};
 } // namespace engine

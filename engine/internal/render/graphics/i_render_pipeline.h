@@ -4,9 +4,17 @@ namespace engine
 {
 	class IRenderPipeline
 	{
+		// friends
+	private:
+		friend class EditorRuntimePipeline;
+		friend class ProductionRuntimePipeline;
+
+		// members
 	protected:
 		virtual bool initialize() = 0;
 		virtual void finalize() = 0;
+
+		virtual void renderFrame() = 0;
 	};
 
 	/*

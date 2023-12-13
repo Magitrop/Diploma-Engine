@@ -7,9 +7,6 @@ file(GLOB_RECURSE SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 add_executable(${PROJECT_NAME} ${SOURCE} ${INCLUDE})
 
-find_package(fmt CONFIG REQUIRED PATHS "${CMAKE_SOURCE_DIR}/engine/dependencies/fmt")
-find_package(spdlog REQUIRED PATHS "${CMAKE_SOURCE_DIR}/engine/dependencies/spdlog")
-
 target_compile_definitions(executable PUBLIC ${BUILD_PLATFORM})
 target_compile_definitions(executable PUBLIC IS_EDITOR)
 target_compile_definitions(executable PUBLIC USE_LOGGER)
@@ -49,7 +46,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glad
     glfw
     glm
-    fmt::fmt
     spdlog
 )
 

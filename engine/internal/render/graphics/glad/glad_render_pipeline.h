@@ -7,10 +7,19 @@
 namespace engine
 {
 	class EntityManager;
+	class ResourceManager;
+	class WindowManager;
 	class GladRenderPipeline final : public IRenderPipeline
 	{
+		// friends
 	private:
-		explicit GladRenderPipeline(std::shared_ptr<EntityManager> entityManager);
+		friend class ProductionRuntimePipeline;
+
+		// members
+	private:
+		explicit GladRenderPipeline(std::shared_ptr<EntityManager> entityManager,
+									std::shared_ptr<ResourceManager> resourceManager,
+									std::shared_ptr<WindowManager> windowManager);
 
 	public:
 		~GladRenderPipeline();
@@ -19,7 +28,10 @@ namespace engine
 		virtual bool initialize() override;
 		virtual void finalize() override;
 
-		class Internal;
-		std::unique_ptr<Internal> m_internal;
+		virtual void renderFrame() override;
+
+		std::shared_ptr<EntityManager> m_entityManager;
+		std::shared_ptr<ResourceManager> m_resourceManager;
+		std::shared_ptr<WindowManager> m_windowManager;
 	};
 } // namespace engine

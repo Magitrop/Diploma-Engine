@@ -1,7 +1,3 @@
 build/
 engine/dependencies/
-engine/libraries/
-engine/internal/dependencies/
-engine/internal/libraries/
-engine/internal/render/gl/
 hierarchy.txt

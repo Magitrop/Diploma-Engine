@@ -4,6 +4,7 @@
 
 #include <engine/core/components/component.h>
 #include <engine/core/components/component_registrar.h>
+#include <engine/core/components/render_component.h>
 #include <engine/core/components/transform_component.h>
 #include <engine/core/entity/entity_manager.h>
 #include <engine/core/time/time_manager.h>
@@ -14,8 +15,12 @@
 #include <engine/executable/runtime.h>
 
 #include <engine/internal/render/graphics/glad/glad_graphic_api.h>
+#include <engine/internal/render/graphics/glad/glad_render_component.h>
+#include <engine/internal/render/graphics/glad/glad_render_pipeline.h>
+#include <engine/internal/render/graphics/glad/glad_resource_manager.h>
 #include <engine/internal/render/window/window_manager.h>
 
+#include <engine/core/resources/resource_registrar.h>
 #include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
 
 namespace engine
@@ -127,9 +132,49 @@ namespace engine
 
 		DEBUG_LOG("Registering built-in components...");
 
-		m_componentRegistrar->registerComponent<TransformComponent>(std::make_shared<TransformComponent>());
+		m_componentRegistrar->registerComponent<TransformComponent>(std::shared_ptr<TransformComponent>(new TransformComponent()));
+		// TODO: abstract graphic API
+		m_componentRegistrar->registerComponent<RenderComponent>(std::shared_ptr<GladRenderComponent>(new GladRenderComponent()));
 
 		return true;
+	}
+
+	bool ProductionRuntimePipeline::initializeResourceManager()
+	{
+		MEMORY_GUARD;
+
+		DEBUG_LOG("Initializing resource manager...");
+		// TODO: reconsider the implicit acquiring of GladResourceManager
+		m_resourceManager = std::shared_ptr<GladResourceManager>(new GladResourceManager());
+		return m_resourceManager != nullptr;
+	}
+
+	bool ProductionRuntimePipeline::initializeRenderPipeline()
+	{
+		MEMORY_GUARD;
+
+		DEBUG_LOG("Initializing render pipeline...");
+		// TODO: abstract graphic API
+		m_renderPipeline = std::shared_ptr<IRenderPipeline>(
+			new GladRenderPipeline(m_entityManager,
+								   std::dynamic_pointer_cast<GladResourceManager>(m_resourceManager),
+								   m_windowManager)
+		);
+		return m_renderPipeline != nullptr;
+	}
+
+	bool ProductionRuntimePipeline::registerBuiltinResources()
+	{
+		DEBUG_LOG("Registering built-in resources...");
+		if (auto manager = std::dynamic_pointer_cast<ResourceRegistrar>(m_resourceManager))
+		{
+			manager->registerBuiltinShaders();
+			manager->registerBuiltinMaterials();
+			return true;
+		}
+
+		ERROR_LOG("Failed to acquire Resource Registrar!");
+		return false;
 	}
 
 	void ProductionRuntimePipeline::finalizeGLFW()

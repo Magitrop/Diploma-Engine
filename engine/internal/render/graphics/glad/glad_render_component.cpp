@@ -10,6 +10,7 @@ namespace engine
 
 		m_VAO.push(VAO);
 		m_VBO.push(VBO);
+		m_material.push(MaterialID());
 	}
 
 	void GladRenderComponent::detachComponent(ComponentID component)
@@ -19,5 +20,11 @@ namespace engine
 
 		m_VBO.remove(m_VBO.begin() + component);
 		m_VAO.remove(m_VAO.begin() + component);
+		m_material.remove(m_material.begin() + component);
+	}
+
+	void GladRenderComponent::setMaterial(ComponentID componentID, MaterialID material)
+	{
+		m_material.at(componentID)->get() = material;
 	}
 } // namespace engine

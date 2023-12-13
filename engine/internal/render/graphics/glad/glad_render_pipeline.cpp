@@ -5,37 +5,14 @@
 
 namespace engine
 {
-	class GladRenderPipeline::Internal final
-	{
-	public:
-		Internal(std::shared_ptr<EntityManager> entityManager);
-		~Internal() = default;
-
-		bool initialize();
-		void finalize();
-
-	private:
-		std::shared_ptr<GladRenderComponent> m_renderManager;
-		std::shared_ptr<EntityManager> m_entityManager;
-	};
-
-	GladRenderPipeline::Internal::Internal(std::shared_ptr<EntityManager> entityManager)
+	GladRenderPipeline::GladRenderPipeline(std::shared_ptr<EntityManager> entityManager,
+										   std::shared_ptr<ResourceManager> resourceManager,
+										   std::shared_ptr<WindowManager> windowManager)
 		: m_entityManager(entityManager)
+		, m_resourceManager(resourceManager)
+		, m_windowManager(windowManager)
 	{
-		m_renderManager = m_entityManager->getComponentManager<GladRenderComponent>();
-	}
 
-	bool GladRenderPipeline::Internal::initialize()
-	{
-		return true;
-	}
-
-	void GladRenderPipeline::Internal::finalize()
-	{}
-
-	GladRenderPipeline::GladRenderPipeline(std::shared_ptr<EntityManager> entityManager)
-	{
-		m_internal = std::make_unique<Internal>(entityManager);
 	}
 
 	GladRenderPipeline::~GladRenderPipeline()
@@ -43,11 +20,14 @@ namespace engine
 
 	bool GladRenderPipeline::initialize()
 	{
-		return m_internal->initialize();
+		return true;
 	}
 
 	void GladRenderPipeline::finalize()
 	{
-		m_internal->finalize();
+	}
+
+	void GladRenderPipeline::renderFrame()
+	{
 	}
 } // namespace engine

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <engine/executable/production_runtime_pipeline.h>
+#include <engine/render/window/window.h>
 
 namespace engine
 {
-	class Window;
 	class EditorRuntimePipeline final : public ProductionRuntimePipeline
 	{
 		// friends
@@ -22,6 +22,6 @@ namespace engine
 		bool initializeEditor();
 		bool createEditorWindow();
 
-		const Window* m_editorWindow;
+		WindowID m_editorWindow;
 	};
 } // namespace engine

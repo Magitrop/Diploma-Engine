@@ -1,6 +1,5 @@
 #include "component_registrar.h"
 
-#include <engine/debug/logging/debug_logger.h>
 #include <engine/internal/helpers/persistent_vector.h>
 
 namespace engine
@@ -73,7 +72,7 @@ namespace engine
 	std::shared_ptr<ComponentManager> ComponentRegistrar::Internal::getComponentManager(std::size_t uniqueComponentID)
 	{
 		auto it = m_registeredComponents.at(uniqueComponentID);
-		if (it != m_registeredComponents.end() && !it->empty())
+		if (it != m_registeredComponents.end())
 			return it->get();
 
 		ERROR_LOG("Cannot get the manager for this component. The component was not properly registered.");
