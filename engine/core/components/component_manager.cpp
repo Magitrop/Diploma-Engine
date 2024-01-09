@@ -1,7 +1,26 @@
 #include "component_manager.h"
 
+#include <engine/core/components/component_manager_impl.h>
+#include <engine/core/components/transform_component_impl.h>
+
 namespace engine
 {
+	ComponentManager::ComponentManager()
+	{
+		m_internal = std::make_unique<Internal>();
+	}
+
 	ComponentManager::~ComponentManager() {}
-	std::size_t ComponentManager::ID = static_cast<std::size_t>(-1);
+
+	std::string ComponentManager::getComponentName()
+	{
+		return m_internal ? m_internal->getComponentName() : constants::UNREGISTERED_COMPONENT_NAME;
+	}
+
+	std::size_t ComponentManager::getUniqueComponentID()
+	{
+		return m_internal ? m_internal->getUniqueComponentID() : constants::UNREGISTERED_UNIQUE_COMPONENT_ID;
+	}
+
+	std::unique_ptr<ComponentManager::Internal> ComponentManager::m_internal;
 } // namespace engine

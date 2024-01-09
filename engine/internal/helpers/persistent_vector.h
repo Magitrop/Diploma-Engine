@@ -4,6 +4,7 @@
 #include <list>
 #include <memory>
 #include <queue>
+#include <functional>
 
 #include <engine/debug/logging/debug_logger.h>
 #include <engine/internal/helpers/assert.h>
@@ -44,7 +45,6 @@ namespace engine
 		};
 		using Pages = std::list<std::shared_ptr<Page>>;
 
-	public:
 		class Iterator final
 		{
 		private:
@@ -77,6 +77,7 @@ namespace engine
 			PageCapacityType m_index;
 		};
 
+	public:
 		constexpr explicit PersistentVector();
 
 		// Returns an iterator at which the value was emplaced.
@@ -94,6 +95,9 @@ namespace engine
 		[[nodiscard]] Iterator begin();
 		[[nodiscard]] Iterator end();
 		[[nodiscard]] Iterator find(const Type& value) const;
+
+		using SearchPredicate = std::function<bool(const Type& value)>;
+		[[nodiscard]] Iterator find(SearchPredicate predicate) const;
 
 		[[nodiscard]] Iterator at(std::size_t index);
 		[[nodiscard]] const Iterator at(std::size_t index) const;
@@ -148,9 +152,7 @@ namespace engine
 				m_currentIndex = 0;
 			}
 
-			auto& result = m_pages.back()->slots[m_currentIndex];
-			result = std::move(slot);
-
+			m_pages.back()->slots[m_currentIndex] = slot;
 			++m_currentIndex;
 
 			return Iterator(std::prev(m_pages.end()), m_currentIndex - 1, m_pages.end());
@@ -160,8 +162,7 @@ namespace engine
 			EmptyIndex empty = m_emptyIndices.front();
 			m_emptyIndices.pop();
 
-			auto& result = (*empty.page)->slots[empty.index];
-			result = std::move(slot);
+			(*empty.page)->slots[empty.index] = slot;
 
 			return Iterator(empty.page, empty.index, m_pages.end());
 		}
@@ -240,11 +241,26 @@ namespace engine
 	{
 		for (auto it = begin(); it != end(); ++it)
 		{
-#if IS_DEBUG
 			if (it->empty())
 				continue;
-#endif // #if IS_DEBUG
+
 			if (it->get() == value)
+			{
+				return it;
+			}
+		}
+		return Iterator(m_pages.end(), 0, m_pages.end());
+	}
+
+	template<typename Type, PageCapacityType PageCapacity>
+	typename PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::find(SearchPredicate predicate) const
+	{
+		for (auto it = begin(); it != end(); ++it)
+		{
+			if (it->empty())
+				continue;
+
+			if (predicate(it->get()))
 			{
 				return it;
 			}

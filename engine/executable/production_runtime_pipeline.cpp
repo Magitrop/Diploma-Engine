@@ -2,11 +2,19 @@
 
 #include <iostream>
 
+#include <engine/internal/render/glad/glad_graphic_api.h>
+#include <engine/internal/render/glad/glad_mesh_renderer_component.h>
+#include <engine/internal/render/glad/glad_render_pipeline.h>
+#include <engine/internal/render/glad/glad_resource_manager.h>
+#include <engine/internal/render/scoped_frame.h>
+
 #include <engine/core/components/component.h>
 #include <engine/core/components/component_registrar.h>
-#include <engine/core/components/render_component.h>
+#include <engine/core/components/renderer_component.h>
 #include <engine/core/components/transform_component.h>
 #include <engine/core/entity/entity_manager.h>
+#include <engine/core/input/input_system_impl.h>
+#include <engine/core/resources/resource_registrar.h>
 #include <engine/core/time/time_manager.h>
 
 #include <engine/debug/logging/debug_logger.h>
@@ -14,14 +22,7 @@
 
 #include <engine/executable/runtime.h>
 
-#include <engine/internal/render/graphics/glad/glad_graphic_api.h>
-#include <engine/internal/render/graphics/glad/glad_render_component.h>
-#include <engine/internal/render/graphics/glad/glad_render_pipeline.h>
-#include <engine/internal/render/graphics/glad/glad_resource_manager.h>
-#include <engine/internal/render/window/window_manager.h>
-
-#include <engine/core/resources/resource_registrar.h>
-#include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
+#include <engine/render/window/window_manager.h>
 
 namespace engine
 {
@@ -80,12 +81,21 @@ namespace engine
 		return true;
 	}
 
+	bool ProductionRuntimePipeline::initializeInputSystem()
+	{
+		MEMORY_GUARD;
+
+		DEBUG_LOG("Initializing input system...");
+		m_inputSystem = std::shared_ptr<InputSystem>(new InputSystem());
+		return m_inputSystem != nullptr;
+	}
+
 	bool ProductionRuntimePipeline::initializeWindowManager()
 	{
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Initializing window manager...");
-		m_windowManager = std::shared_ptr<WindowManager>(new WindowManager());
+		m_windowManager = std::shared_ptr<WindowManager>(new WindowManager(m_inputSystem));
 		return m_windowManager != nullptr;
 	}
 
@@ -95,7 +105,7 @@ namespace engine
 
 		// TODO: abstract graphic API
 		DEBUG_LOG("Initializing graphic API...");
-		m_graphicAPI = std::shared_ptr<GladGraphicAPI>(new GladGraphicAPI());
+		m_graphicAPI = std::shared_ptr<IGraphicAPI>(new GladGraphicAPI());
 		return m_graphicAPI->initialize();
 	}
 
@@ -126,27 +136,28 @@ namespace engine
 		return m_entityManager != nullptr;
 	}
 
+	bool ProductionRuntimePipeline::initializeResourceManager()
+	{
+		MEMORY_GUARD;
+
+		DEBUG_LOG("Initializing resource manager...");
+		// TODO: consider the implicit acquiring of GladResourceManager
+		m_resourceManager = std::shared_ptr<ResourceManager>(new GladResourceManager());
+		return m_resourceManager != nullptr;
+	}
+
 	bool ProductionRuntimePipeline::registerBuiltinComponents()
 	{
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Registering built-in components...");
 
-		m_componentRegistrar->registerComponent<TransformComponent>(std::shared_ptr<TransformComponent>(new TransformComponent()));
+		// TODO: remake with a proper macro (see serialization_helper.h)
+		m_componentRegistrar->registerComponent<Transform>(std::shared_ptr<Transform>(new Transform()), "Transform");
 		// TODO: abstract graphic API
-		m_componentRegistrar->registerComponent<RenderComponent>(std::shared_ptr<GladRenderComponent>(new GladRenderComponent()));
+		m_componentRegistrar->registerComponent<MeshRenderer>(std::shared_ptr<GladMeshRenderer>(new GladMeshRenderer(m_resourceManager)), "MeshRenderer");
 
 		return true;
-	}
-
-	bool ProductionRuntimePipeline::initializeResourceManager()
-	{
-		MEMORY_GUARD;
-
-		DEBUG_LOG("Initializing resource manager...");
-		// TODO: reconsider the implicit acquiring of GladResourceManager
-		m_resourceManager = std::shared_ptr<GladResourceManager>(new GladResourceManager());
-		return m_resourceManager != nullptr;
 	}
 
 	bool ProductionRuntimePipeline::initializeRenderPipeline()
@@ -157,24 +168,23 @@ namespace engine
 		// TODO: abstract graphic API
 		m_renderPipeline = std::shared_ptr<IRenderPipeline>(
 			new GladRenderPipeline(m_entityManager,
-								   std::dynamic_pointer_cast<GladResourceManager>(m_resourceManager),
-								   m_windowManager)
+								   m_resourceManager)
 		);
 		return m_renderPipeline != nullptr;
 	}
 
 	bool ProductionRuntimePipeline::registerBuiltinResources()
 	{
-		DEBUG_LOG("Registering built-in resources...");
-		if (auto manager = std::dynamic_pointer_cast<ResourceRegistrar>(m_resourceManager))
-		{
-			manager->registerBuiltinShaders();
-			manager->registerBuiltinMaterials();
-			return true;
-		}
+		MEMORY_GUARD;
 
-		ERROR_LOG("Failed to acquire Resource Registrar!");
-		return false;
+		auto resourceRegistrar = std::dynamic_pointer_cast<ResourceRegistrar>(m_resourceManager);
+		DEBUG_ASSERT(resourceRegistrar != nullptr);
+
+		DEBUG_LOG("Registering built-in resources...");
+
+		resourceRegistrar->registerBuiltinShaders();
+		resourceRegistrar->registerBuiltinMaterials();
+		return true;
 	}
 
 	void ProductionRuntimePipeline::finalizeGLFW()

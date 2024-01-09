@@ -7,11 +7,6 @@ file(GLOB_RECURSE SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 file(GLOB_RECURSE INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 add_executable(${PROJECT_NAME} ${SOURCE} ${INCLUDE})
 
-target_compile_definitions(executable PUBLIC ${BUILD_PLATFORM})
-target_compile_definitions(executable PUBLIC IS_EDITOR)
-target_compile_definitions(executable PUBLIC USE_LOGGER)
-target_compile_definitions(executable PUBLIC USE_MEMORY_GUARD)
-
 target_link_libraries(${PROJECT_NAME} PRIVATE
     engine::core::components
     engine::core::entity
@@ -26,7 +21,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
     engine::editor::gizmo
     engine::editor::gui
-    engine::editor::initialization
+    engine::editor::viewport
 
     engine::internal::core::constants
     engine::internal::core::projects
@@ -34,9 +29,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
     engine::internal::helpers
 
-    engine::internal::render::graphics::glad_api
-    engine::internal::render::graphics
-    engine::internal::render::window
+    engine::internal::render::glad_api
+    engine::internal::render
 
     engine::render::camera
     engine::render::lighting
@@ -47,6 +41,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw
     glm
     spdlog
+    imgui
 )
 
 set_target_properties(executable PROPERTIES FOLDER "executable")

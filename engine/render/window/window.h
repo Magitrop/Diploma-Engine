@@ -4,8 +4,6 @@
 
 #include <engine/debug/logging/debug_logger.h>
 
-class GLFWwindow;
-
 namespace engine
 {
 	// A lightweight wrapper for an actual window in the Window Manager.

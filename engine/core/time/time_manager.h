@@ -4,20 +4,14 @@
 
 namespace engine
 {
-	class TimeManager
+	class TimeManager final
 	{
 		// friends
 	private:
-		friend class ProductionRuntimePipeline;
 		friend class ScopedTime;
 
-		// members
-	private:
-		explicit TimeManager();
-
-		void setDeltaTime(std::chrono::steady_clock::duration time);
-
 	public:
+		explicit TimeManager();
 		~TimeManager();
 
 		double deltaTime() const;

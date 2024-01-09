@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/dependencies/gl/glm/glm/vec3.hpp>
+#include <engine/dependencies/glm/glm/vec3.hpp>
 
 namespace engine
 {

@@ -1,7 +1,5 @@
 #include "window.h"
 
-#include <engine/dependencies/gl/glfw/include/GLFW/glfw3.h>
-
 namespace engine
 {
 	WindowID::WindowID(std::size_t index)

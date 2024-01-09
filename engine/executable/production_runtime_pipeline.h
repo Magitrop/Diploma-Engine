@@ -10,9 +10,11 @@ namespace engine
 	class ComponentRegistrar;
 	class EntityManager;
 	class IGraphicAPI;
+	class InputSystem;
 	class IRenderPipeline;
 	class Logger;
 	class ResourceManager;
+	class ScopedFrameFactory;
 	class TimeManager;
 	class WindowManager;
 	class ProductionRuntimePipeline : public IRuntimePipeline
@@ -33,18 +35,18 @@ namespace engine
 		[[nodiscard]] bool initializeLogger();
 #endif // #if USE_LOGGER
 		[[nodiscard]] bool initializeGLFW();
+		[[nodiscard]] bool initializeInputSystem();
 		[[nodiscard]] bool initializeWindowManager();
 		[[nodiscard]] bool initializeGraphicAPI();
 		[[nodiscard]] bool initializeTimeManager();
 		[[nodiscard]] bool initializeComponentRegistrar();
 		[[nodiscard]] bool initializeEntityManager();
+		[[nodiscard]] bool initializeResourceManager();
 
 		[[nodiscard]] bool registerBuiltinComponents();
-
-		[[nodiscard]] bool initializeResourceManager();
-		[[nodiscard]] bool initializeRenderPipeline();
-
 		[[nodiscard]] bool registerBuiltinResources();
+
+		[[nodiscard]] bool initializeRenderPipeline();
 
 		void finalizeGLFW();
 		void finalizeGraphicAPI();
@@ -59,5 +61,6 @@ namespace engine
 		std::shared_ptr<EntityManager> m_entityManager;
 		std::shared_ptr<ResourceManager> m_resourceManager;
 		std::shared_ptr<IRenderPipeline> m_renderPipeline;
+		std::shared_ptr<InputSystem> m_inputSystem;
 	};
 } // namespace engine

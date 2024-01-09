@@ -20,7 +20,11 @@ namespace engine
 		virtual void run() override;
 
 		bool initializeEditor();
+
 		bool createEditorWindow();
+		bool initializeImGui();
+
+		void finalizeImGui();
 
 		WindowID m_editorWindow;
 	};

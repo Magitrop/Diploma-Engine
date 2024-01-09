@@ -1,10 +1,8 @@
 #pragma once
 
-#include <memory>
-
-#include <engine/core/components/component_manager.h>
-#include <engine/core/math/vector3.h>
+#include <engine/core/components/builtin_component.h>
 #include <engine/core/math/quaternion.h>
+#include <engine/core/math/vector3.h>
 
 namespace engine
 {
@@ -15,21 +13,13 @@ namespace engine
 		Vector3& scale;
 	};
 
-	class TransformComponent final : public ComponentManager
+	class Transform final : public BuiltinComponent
 	{
 	public:
-		TransformComponent();
-		virtual ~TransformComponent() override;
+		Transform();
+		virtual ~Transform() override;
 
 	public:
 		TransformRef getTransform(ComponentID id);
-
-	protected:
-		virtual void attachComponent(ComponentID component) override;
-		virtual void detachComponent(ComponentID component) override;
-
-	private:
-		class Internal;
-		std::unique_ptr<Internal> m_internal;
 	};
 } // namespace engine

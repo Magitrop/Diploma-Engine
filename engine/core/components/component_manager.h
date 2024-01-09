@@ -1,30 +1,35 @@
 #pragma once
 
+#include <cstddef>
+#include <memory>
+#include <string>
+
 #include <engine/core/components/component.h>
 #include <engine/core/entity/entity.h>
-
-#include <cstddef>
 
 namespace engine
 {
 	class ComponentManager
 	{
+		// friends
 	private:
 		friend class EntityManager;
 		friend class ComponentRegistrar;
 
+		// members
 	protected:
+		explicit ComponentManager();
 		virtual ~ComponentManager() = 0;
-
-		// TODO: should be deleted and replaced by an automatized component initialization
-		virtual void attachComponent(ComponentID component) = 0;
-		// TODO: should be deleted and replaced by an automatized component finalization
-		virtual void detachComponent(ComponentID component) = 0;
 
 		virtual void onComponentAttached(EntityID entity, ComponentID component) {}
 		virtual void onComponentDetached(EntityID entity, ComponentID component) {}
 
+	public:
+		static std::string getComponentName();
+		static std::size_t getUniqueComponentID();
+
 	private:
-		static std::size_t ID;
+		class Internal;
+		static std::unique_ptr<Internal> m_internal;
 	};
 } // namespace engine

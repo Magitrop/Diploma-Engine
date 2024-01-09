@@ -6,6 +6,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/debug)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/dependencies)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/editor)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/executable)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/internal)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/render)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/executable)

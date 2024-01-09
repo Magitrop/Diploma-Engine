@@ -9,11 +9,6 @@ namespace engine
 {
 	class ResourceRegistrar : public ResourceManager
 	{
-		// friends
-	private:
-		friend class ProductionRuntimePipeline;
-
-		// members
 	public:
 		virtual void registerBuiltinShaders() = 0;
 		virtual void registerBuiltinMaterials() = 0;

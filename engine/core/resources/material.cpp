@@ -2,9 +2,6 @@
 
 namespace engine
 {
-	Material::~Material()
-	{}
-
 	MaterialID::MaterialID(std::size_t index)
 		: m_id(index)
 	{}

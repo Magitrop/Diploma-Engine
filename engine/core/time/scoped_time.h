@@ -5,17 +5,10 @@
 namespace engine
 {
 	class TimeManager;
-	class ScopedTime
+	class ScopedTime final
 	{
-		// friends
-	private:
-		friend class ProductionRuntimePipeline;
-
-		// members
-	private:
-		ScopedTime(TimeManager* manager);
-
 	public:
+		ScopedTime(TimeManager* manager);
 		~ScopedTime();
 
 	private:

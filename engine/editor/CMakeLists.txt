@@ -4,4 +4,5 @@ message(STATUS "Processing ${CMAKE_CURRENT_SOURCE_DIR}...")
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/gizmo)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/gui)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/initialization)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/viewport)
+

@@ -1,15 +1,13 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <string>
-
 #include <engine/core/math/vector2.h>
 #include <engine/core/math/vector3.h>
 #include <engine/core/math/vector4.h>
 #include <engine/core/math/matrix2x2.h>
 #include <engine/core/math/matrix3x3.h>
 #include <engine/core/math/matrix4x4.h>
+
+#include <string>
 
 namespace engine
 {

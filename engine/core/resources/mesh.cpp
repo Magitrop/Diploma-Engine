@@ -24,13 +24,4 @@ namespace engine
 	{
 		return m_id != static_cast<std::size_t>(-1);
 	}
-
-	Mesh::Mesh()
-	{
-	}
-
-	Mesh::Mesh(std::vector<Vertex> vertices)
-		: m_vertices(std::move(vertices))
-	{
-	}
 } // namespace engine

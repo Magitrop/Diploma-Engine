@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include <engine/core/entity/entity.h>
 #include <engine/core/components/component.h>
@@ -11,16 +12,8 @@ namespace engine
 	class ComponentRegistrar;
 	class EntityManager final
 	{
-		// friends
-	private:
-		friend class ProductionRuntimePipeline;
-		friend class Main;
-
-		// members
-	private:
-		explicit EntityManager(std::shared_ptr<ComponentRegistrar> registrar);
-
 	public:
+		explicit EntityManager(std::shared_ptr<ComponentRegistrar> registrar);
 		~EntityManager();
 
 		// Attaches a Component to an Entity and returns its ID.
@@ -63,30 +56,30 @@ namespace engine
 	template<typename Component>
 	ComponentID EntityManager::attachComponent(EntityID entity)
 	{
-		return attachComponentInternal(entity, Component::ID);
+		return attachComponentInternal(entity, Component::getUniqueComponentID());
 	}
 
 	template<typename Component>
 	void EntityManager::detachComponent(EntityID entity)
 	{
-		detachComponentInternal(entity, Component::ID);
+		detachComponentInternal(entity, Component::getUniqueComponentID());
 	}
 
 	template<typename Component>
 	ComponentID EntityManager::getComponent(EntityID entity)
 	{
-		return getComponentInternal(entity, Component::ID);
+		return getComponentInternal(entity, Component::getUniqueComponentID());
 	}
 
 	template<typename Component>
 	bool EntityManager::hasComponent(EntityID entity)
 	{
-		return hasComponentInternal(entity, Component::ID);
+		return hasComponentInternal(entity, Component::getUniqueComponentID());
 	}
 
 	template<typename Component>
 	std::shared_ptr<Component> EntityManager::getComponentManager()
 	{
-		return std::dynamic_pointer_cast<Component>(getComponentManagerInternal(Component::ID));
+		return std::dynamic_pointer_cast<Component>(getComponentManagerInternal(Component::getUniqueComponentID()));
 	}
 } // namespace engine

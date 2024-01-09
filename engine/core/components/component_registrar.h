@@ -1,6 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <string>
+
+#include <engine/core/components/component_manager_impl.h>
 
 namespace engine
 {
@@ -18,35 +21,35 @@ namespace engine
 	public:
 		~ComponentRegistrar();
 
+		// Should be called by the proper macro (see serialization_helper.h).
 		template<typename Component>
-		void registerComponent(std::shared_ptr<ComponentManager> manager);
+		std::size_t registerComponent(std::shared_ptr<Component> manager, std::string componentName);
 
 		template<typename Component>
-		void unregisterComponent(std::shared_ptr<ComponentManager> manager);
+		void unregisterComponent();
 
 		void unregisterAll();
 
-		[[nodiscard]] std::size_t getUniqueComponentID(std::shared_ptr<ComponentManager> manager);
+		[[nodiscard]] std::shared_ptr<ComponentManager> getComponentManager(std::string componentName);
 		[[nodiscard]] std::shared_ptr<ComponentManager> getComponentManager(std::size_t uniqueComponentID);
 
 	private:
-		std::size_t registerComponentInternal(std::shared_ptr<ComponentManager> manager);
-		void unregisterComponentInternal(std::shared_ptr<ComponentManager> manager);
+		std::size_t registerComponentInternal(std::shared_ptr<ComponentManager> manager, std::string componentName);
+		void unregisterComponentInternal(std::size_t uniqueComponentID);
 
 		class Internal;
 		std::unique_ptr<Internal> m_internal;
 	};
 
 	template<typename Component>
-	void ComponentRegistrar::registerComponent(std::shared_ptr<ComponentManager> manager)
+	std::size_t ComponentRegistrar::registerComponent(std::shared_ptr<Component> manager, std::string componentName)
 	{
-		Component::ID = registerComponentInternal(manager);
+		return registerComponentInternal(manager, componentName);
 	}
 
 	template<typename Component>
-	void ComponentRegistrar::unregisterComponent(std::shared_ptr<ComponentManager> manager)
+	void ComponentRegistrar::unregisterComponent()
 	{
-		unregisterComponentInternal(manager);
-		Component::ID = static_cast<std::size_t>(-1);
+		unregisterComponentInternal(Component::getUniqueComponentID());
 	}
 } // namespace engine

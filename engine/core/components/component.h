@@ -8,15 +8,9 @@ namespace engine
 	// Not to be confused with Unique Component ID that each Component acquires after registration!
 	class ComponentID
 	{
-		// friends
-	private:
-		friend class EntityManager;
-
-		// members
-	private:
+	public:
 		explicit ComponentID(std::size_t index);
 
-	public:
 		// Creates an invalid ComponentID.
 		explicit ComponentID();
 

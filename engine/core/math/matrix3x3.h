@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/dependencies/gl/glm/glm/mat3x3.hpp>
+#include <engine/dependencies/glm/glm/mat3x3.hpp>
 
 namespace engine
 {

@@ -4,6 +4,7 @@
 
 namespace engine
 {
+	// Executes all given functions until one of them returns false.
 	template<typename Owner>
 	class ScopedSequentialExecutor final
 	{

@@ -8,15 +8,9 @@ namespace engine
 	// Does not store its own Components. Use EntityManager to access them instead.
 	class EntityID final
 	{
-		// friends
-	private:
-		friend class EntityManager;
-
-		// members
-	private:
+	public:
 		explicit EntityID(std::size_t index);
 
-	public:
 		// Creates an invalid EntityID.
 		explicit EntityID();
 

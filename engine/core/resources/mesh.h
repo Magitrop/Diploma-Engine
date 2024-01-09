@@ -3,17 +3,19 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <engine/core/math/vector3.h>
+#include <engine/internal/helpers/non_copyable.h>
 
 namespace engine
 {
 	struct Vertex
 	{
 		Vector3 position;
+		//Vector3 normal;
 	};
 
-	// A lightweight wrapper for an actual mesh in the Resource Manager.
 	class MeshID final
 	{
 	public:
@@ -31,15 +33,10 @@ namespace engine
 		std::size_t m_id;
 	};
 
-	class Mesh final
+	// A lightweight wrapper for an actual mesh in the Resource Manager.
+	class MeshAccessor
 	{
 	public:
-		// Creates an empty Mesh.
-		explicit Mesh();
-
-		explicit Mesh(std::vector<Vertex> vertices);
-
-	private:
-		std::vector<Vertex> m_vertices;
+		virtual void setVertices(std::vector<Vertex>&& vertices) {};
 	};
 } // namespace engine

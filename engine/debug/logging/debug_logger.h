@@ -5,6 +5,10 @@
 #include <string>
 #include <memory>
 
+// spdlog tries to redefine it somewhere
+#ifdef APIENTRY
+#undef APIENTRY
+#endif
 #include <engine/dependencies/spdlog/include/spdlog/spdlog.h>
 
 namespace engine
