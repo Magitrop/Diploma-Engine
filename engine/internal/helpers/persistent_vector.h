@@ -25,8 +25,7 @@ namespace engine
 		struct Slot final
 		{
 			Slot();
-			Slot(Type& value);
-			Slot(Type&& value);
+			Slot(Type value);
 
 			Type& get();
 			const Type& get() const;
@@ -45,6 +44,7 @@ namespace engine
 		};
 		using Pages = std::list<std::shared_ptr<Page>>;
 
+	public:
 		class Iterator final
 		{
 		private:
@@ -81,9 +81,7 @@ namespace engine
 		constexpr explicit PersistentVector();
 
 		// Returns an iterator at which the value was emplaced.
-		Iterator push(Type& value);
-		// Returns an iterator at which the value was emplaced.
-		Iterator push(Type&& value);
+		Iterator push(Type value);
 		void remove(const Iterator at);
 		void clear();
 		// Clears the vector and invalidates all its iterators, pointers and references.
@@ -129,13 +127,7 @@ namespace engine
 	}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::push(Type& value)
-	{
-		return pushInternal(std::move(Slot(value)));
-	}
-
-	template<typename Type, PageCapacityType PageCapacity>
-	PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::push(Type&& value)
+	PersistentVector<Type, PageCapacity>::Iterator PersistentVector<Type, PageCapacity>::push(Type value)
 	{
 		return pushInternal(std::move(Slot(std::move(value))));
 	}
@@ -339,13 +331,7 @@ namespace engine
 	{}
 
 	template<typename Type, PageCapacityType PageCapacity>
-	PersistentVector<Type, PageCapacity>::Slot::Slot(Type& value)
-		: m_value(value)
-		, m_empty(false)
-	{}
-
-	template<typename Type, PageCapacityType PageCapacity>
-	PersistentVector<Type, PageCapacity>::Slot::Slot(Type&& value)
+	PersistentVector<Type, PageCapacity>::Slot::Slot(Type value)
 		: m_value(std::move(value))
 		, m_empty(false)
 	{}

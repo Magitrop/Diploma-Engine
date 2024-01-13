@@ -26,11 +26,17 @@ namespace engine
 		~GladRenderPipeline();
 
 	private:
-		virtual bool initialize() override;
-		virtual void finalize() override;
+#if IS_EDITOR
+		virtual bool initialize(std::shared_ptr<EditorViewports> viewports) override;
+		virtual std::shared_ptr<IFramebuffer> createFramebuffer(std::uint32_t width,
+																std::uint32_t height) override;
+		virtual void renderEditorViewports() override;
+		virtual void renderEditorSimulation() override;
+#else
+		virtual void renderFrame() override;
+#endif  // #if IS_EDITOR
 
-		virtual void clearFrame() override;
-		virtual void renderFrame(std::shared_ptr<IRenderContext> renderContext) override;
+		virtual void finalize() override;
 
 		std::shared_ptr<EntityManager> m_entityManager;
 		std::shared_ptr<GladResourceManager> m_resourceManager;

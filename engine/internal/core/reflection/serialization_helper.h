@@ -6,7 +6,6 @@
 
 #include <engine/core/components/component_registrar.h>
 
-//#ifdef IS_EDITOR
 #define SERIALIZATION_BEGIN																					\
 struct ComponentField																						\
 {																											\

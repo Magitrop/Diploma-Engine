@@ -20,5 +20,7 @@ namespace engine
 		constexpr std::size_t SHADERS_PER_PAGE = 128; // The amount of shaders per page in the Resource Manager.
 		constexpr std::size_t MATERIALS_PER_PAGE = 256; // The amount of materials per page in the Resource Manager.
 		constexpr std::size_t MESHES_PER_PAGE = 256; // The amount of meshes per page in the Resource Manager.
+
+		constexpr std::size_t RENDER_CONTEXTS_PER_PAGE = 8; // The amount of render context data per page in the Render Pipeline.
 	}
 }

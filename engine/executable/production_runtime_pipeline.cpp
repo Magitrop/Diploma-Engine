@@ -6,7 +6,6 @@
 #include <engine/internal/render/glad/glad_mesh_renderer_component.h>
 #include <engine/internal/render/glad/glad_render_pipeline.h>
 #include <engine/internal/render/glad/glad_resource_manager.h>
-#include <engine/internal/render/scoped_frame.h>
 
 #include <engine/core/components/component.h>
 #include <engine/core/components/component_registrar.h>

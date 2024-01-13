@@ -15,9 +15,9 @@
 #include <engine/debug/memory/memory_guard.h>
 
 #include <engine/editor/gui/imgui_scoped_frame.h>
+#include <engine/editor/viewport/editor_framebuffer.h>
 
 #include <engine/internal/helpers/scoped_sequential_executor.h>
-#include <engine/internal/render/scoped_frame.h>
 
 #include <engine/render/window/window_manager_impl.h>
 
@@ -113,20 +113,28 @@ namespace engine
 		m_isRunning = true;
 		float x = 0;
 
-		auto scopedFrameFactory(std::make_shared<ScopedFrameFactory>(m_renderPipeline, m_windowManager));
 		while (isRunning())
 		{
 			ScopedTime timer = startDeltaTimer();
-			//ScopedFrame frame = scopedFrameFactory->beginFrame(m_editorWindow);
-			m_renderPipeline->renderFrame();
+			m_renderPipeline->renderEditorViewports();
 
 			// editor->draw
 			{
 				ImGuiScopedFrame imguiFrame;
 
-				if (ImGui::Begin("My Window", nullptr, ImGuiWindowFlags_MenuBar))
+				std::size_t viewportIndex = 0;
+				EditorViewports viewports = *m_editorViewports.get();
+				for (const auto& camera : viewports)
 				{
-					ImGui::End();
+					std::string viewportName = std::format("Viewport {}", ++viewportIndex);
+
+					EditorFramebuffer* framebuffer = static_cast<EditorFramebuffer*>(camera.framebuffer.get());
+					if (ImGui::Begin(viewportName.c_str(), nullptr, ImGuiWindowFlags_MenuBar))
+					{
+						ImVec2 size = ImVec2(camera.framebuffer->width(), camera.framebuffer->height());
+						ImGui::Image(framebuffer->textureID(), size);
+						ImGui::End();
+					}
 				}
 			}
 			glfwPollEvents();
@@ -139,7 +147,6 @@ namespace engine
 			x = sin(m_timeManager->timeSinceLaunch());
 
 			m_windowManager->m_internal->swapBuffers(m_editorWindow);
-			m_renderPipeline->clearFrame();
 		}
 	}
 
@@ -155,8 +162,17 @@ namespace engine
 
 		executor(&EditorRuntimePipeline::createEditorWindow);
 		executor(&EditorRuntimePipeline::initializeImGui);
+		executor(&EditorRuntimePipeline::initializeViewports);
 
 		return executor.result();
+	}
+
+	bool EditorRuntimePipeline::initializeViewports()
+	{
+		MEMORY_GUARD;
+
+		m_editorViewports = std::shared_ptr<EditorViewports>(new EditorViewports());
+		return m_editorViewports != nullptr;
 	}
 
 	bool EditorRuntimePipeline::createEditorWindow()
@@ -197,6 +213,24 @@ namespace engine
 
 		ImGui::StyleColorsDark();
 		return true;
+	}
+
+	bool EditorRuntimePipeline::initializeRenderPipeline()
+	{
+		bool result = true;
+
+		result &= Base::initializeRenderPipeline();
+		result &= m_renderPipeline->initialize(m_editorViewports);
+
+		createEditorViewport(400, 400);
+		createEditorViewport(400, 400);
+		return result;
+	}
+
+	EditorCamera EditorRuntimePipeline::createEditorViewport(std::size_t initialViewportWidth,
+															 std::size_t initialViewportHeight)
+	{
+		return m_renderPipeline->createEditorCamera(initialViewportWidth, initialViewportHeight);
 	}
 
 	void EditorRuntimePipeline::finalizeImGui()

@@ -15,7 +15,6 @@ namespace engine
 	private:
 		friend class ProductionRuntimePipeline;
 		friend class EditorRuntimePipeline;
-		friend class ScopedFrame;
 
 		// members
 	private:

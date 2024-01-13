@@ -14,7 +14,6 @@ namespace engine
 	class IRenderPipeline;
 	class Logger;
 	class ResourceManager;
-	class ScopedFrameFactory;
 	class TimeManager;
 	class WindowManager;
 	class ProductionRuntimePipeline : public IRuntimePipeline
@@ -46,7 +45,7 @@ namespace engine
 		[[nodiscard]] bool registerBuiltinComponents();
 		[[nodiscard]] bool registerBuiltinResources();
 
-		[[nodiscard]] bool initializeRenderPipeline();
+		[[nodiscard]] virtual bool initializeRenderPipeline();
 
 		void finalizeGLFW();
 		void finalizeGraphicAPI();
