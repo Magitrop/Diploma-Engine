@@ -9,5 +9,7 @@ namespace engine
 	{
 	public:
 		virtual ImTextureID textureID() const = 0;
+
+		virtual void setSize(std::uint32_t x, std::uint32_t y) = 0;
 	};
 } // namespace engine

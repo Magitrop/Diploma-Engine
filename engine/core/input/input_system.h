@@ -12,7 +12,7 @@ namespace engine
 	{
 		// friends
 	private:
-		friend class WindowManager;
+		friend class InputSystemAccessor;
 
 		// members
 	public:

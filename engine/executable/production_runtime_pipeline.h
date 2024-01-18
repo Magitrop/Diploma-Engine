@@ -11,6 +11,7 @@ namespace engine
 	class EntityManager;
 	class IGraphicAPI;
 	class InputSystem;
+	class InputSystemAccessor;
 	class IRenderPipeline;
 	class Logger;
 	class ResourceManager;
@@ -61,5 +62,6 @@ namespace engine
 		std::shared_ptr<ResourceManager> m_resourceManager;
 		std::shared_ptr<IRenderPipeline> m_renderPipeline;
 		std::shared_ptr<InputSystem> m_inputSystem;
+		std::shared_ptr<InputSystemAccessor> m_inputSystemAccessor;
 	};
 } // namespace engine

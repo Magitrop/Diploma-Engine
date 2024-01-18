@@ -8,6 +8,10 @@
 #include <engine/core/components/component_manager.h>
 #include <engine/core/components/component_registrar.h>
 #include <engine/core/entity/entity_manager.h>
+#include <engine/core/input/input_system_impl.h>
+#include <engine/core/input/input_system_accessor.h>
+#include <engine/core/math/vector4.h>
+#include <engine/core/math/quaternion.h>
 #include <engine/core/resources/resource_manager.h>
 #include <engine/core/time/time_manager.h>
 
@@ -22,8 +26,10 @@
 #include <engine/render/window/window_manager_impl.h>
 
 #include <engine/dependencies/glfw/include/GLFW/glfw3.h>
-#include <engine/dependencies/imgui/backends/imgui_impl_opengl3.h>
 #include <engine/dependencies/imgui/backends/imgui_impl_glfw.h>
+#include <engine/dependencies/imgui/backends/imgui_impl_opengl3.h>
+
+#include <engine/dependencies/glm/glm/trigonometric.hpp>
 
 namespace engine
 {
@@ -81,34 +87,38 @@ namespace engine
 
 		auto renderer = m_entityManager->getComponentManager<MeshRenderer>();
 		auto entity = m_entityManager->createEntity();
+		auto grid = m_entityManager->createEntity();
 		auto rendererID = m_entityManager->attachComponent<MeshRenderer>(entity);
+		auto gridID = m_entityManager->attachComponent<MeshRenderer>(grid);
 		auto materialID = m_resourceManager->findMaterial("default");
-
+		auto gridMaterial = m_resourceManager->findMaterial("editor_grid");
+		
 		auto meshID1 = m_resourceManager->createMesh();
 		std::vector<Vertex> v1;
-		v1.emplace_back(Vector3(-1, -1, 0));
-		v1.emplace_back(Vector3(1, -1, 0));
-		v1.emplace_back(Vector3(0, 1, 0));
-		m_resourceManager->getMeshByID(meshID1)->setVertices(std::move(v1));
+		std::vector<std::uint32_t> i1;
+		for (int i = 0; i < 6; ++i)
+		{
+			v1.emplace_back(Vector3::zero());
+			i1.emplace_back(i);
+		}
+		m_resourceManager->getMeshByID(meshID1)->setVertices(std::move(v1), std::move(i1));
 
 		auto meshID2 = m_resourceManager->createMesh();
-		std::vector<Vertex> v2;
-		v2.emplace_back(Vector3(-1, -1, 0));
-		v2.emplace_back(Vector3(0, -1, 0));
-		v2.emplace_back(Vector3(0, 1, 0));
-		m_resourceManager->getMeshByID(meshID2)->setVertices(std::move(v2));
+		std::vector<Vertex> v2
+		{
+			Vertex(Vector3(0, 0, 3)),
+			Vertex(Vector3(1, 1, 3)),
+			Vertex(Vector3(1, 0, 3))
+		};
+		std::vector<std::uint32_t> i2;
+		for (int i = 0; i < 3; ++i)
+			i2.emplace_back(i);
+		m_resourceManager->getMeshByID(meshID2)->setVertices(std::move(v2), std::move(i2));
 
-		auto meshID3 = m_resourceManager->createMesh();
-		std::vector<Vertex> v3;
-		v3.emplace_back(Vector3(-1, -1, 0));
-		v3.emplace_back(Vector3(1, 0, 0));
-		v3.emplace_back(Vector3(0, 1, 0));
-		m_resourceManager->getMeshByID(meshID3)->setVertices(std::move(v3));
-
-		//renderer->setMaterial(rendererID, materialID);
-		renderer->setMesh(rendererID, meshID1);
+		renderer->setMaterial(rendererID, materialID);
+		renderer->setMaterial(gridID, gridMaterial);
+		renderer->setMesh(gridID, meshID1);
 		renderer->setMesh(rendererID, meshID2);
-		renderer->setMesh(rendererID, meshID3);
 
 		m_isRunning = true;
 		float x = 0;
@@ -116,35 +126,18 @@ namespace engine
 		while (isRunning())
 		{
 			ScopedTime timer = startDeltaTimer();
+
+			m_inputSystemAccessor->onFrameBegin();
+			glfwPollEvents();
+
 			m_renderPipeline->renderEditorViewports();
 
 			// editor->draw
 			{
 				ImGuiScopedFrame imguiFrame;
 
-				std::size_t viewportIndex = 0;
-				EditorViewports viewports = *m_editorViewports.get();
-				for (const auto& camera : viewports)
-				{
-					std::string viewportName = std::format("Viewport {}", ++viewportIndex);
-
-					EditorFramebuffer* framebuffer = static_cast<EditorFramebuffer*>(camera.framebuffer.get());
-					if (ImGui::Begin(viewportName.c_str(), nullptr, ImGuiWindowFlags_MenuBar))
-					{
-						ImVec2 size = ImVec2(camera.framebuffer->width(), camera.framebuffer->height());
-						ImGui::Image(framebuffer->textureID(), size);
-						ImGui::End();
-					}
-				}
+				m_editorViewports->draw();
 			}
-			glfwPollEvents();
-
-			std::vector<Vertex> v4;
-			v4.emplace_back(Vector3(-1, 0, 0));
-			v4.emplace_back(Vector3(x, -1, 0));
-			v4.emplace_back(Vector3(0, 1, 0));
-			m_resourceManager->getMeshByID(meshID3)->setVertices(std::move(v4));
-			x = sin(m_timeManager->timeSinceLaunch());
 
 			m_windowManager->m_internal->swapBuffers(m_editorWindow);
 		}
@@ -220,17 +213,17 @@ namespace engine
 		bool result = true;
 
 		result &= Base::initializeRenderPipeline();
-		result &= m_renderPipeline->initialize(m_editorViewports);
+		result &= m_renderPipeline->initialize(m_editorViewports, m_inputSystem);
 
 		createEditorViewport(400, 400);
 		createEditorViewport(400, 400);
 		return result;
 	}
 
-	EditorCamera EditorRuntimePipeline::createEditorViewport(std::size_t initialViewportWidth,
-															 std::size_t initialViewportHeight)
+	EditorViewportWindow EditorRuntimePipeline::createEditorViewport(std::size_t initialViewportWidth,
+																	 std::size_t initialViewportHeight)
 	{
-		return m_renderPipeline->createEditorCamera(initialViewportWidth, initialViewportHeight);
+		return m_renderPipeline->createEditorViewport(initialViewportWidth, initialViewportHeight);
 	}
 
 	void EditorRuntimePipeline::finalizeImGui()

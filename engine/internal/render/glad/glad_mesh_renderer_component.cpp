@@ -8,7 +8,7 @@ namespace engine
 {
 	GladMeshRenderer::GladMeshRenderer(std::shared_ptr<ResourceManager> resourceManager)
 	{
-		m_internal = std::unique_ptr<GladMeshRendererInternal>(new GladMeshRendererInternal(resourceManager, this));
+		m_internal = std::shared_ptr<GladMeshRendererInternal>(new GladMeshRendererInternal(resourceManager, this));
 	}
 
 	void GladMeshRenderer::setMaterial(ComponentID componentID, MaterialID materialID)

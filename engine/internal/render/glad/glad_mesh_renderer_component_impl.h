@@ -37,7 +37,7 @@ namespace engine
 
 		PersistentVector<MeshID, constants::VERY_FREQUENT_COMPONENT> m_meshID;
 		PersistentVector<GLuint, constants::VERY_FREQUENT_COMPONENT> m_meshVAO;
-		PersistentVector<GLuint, constants::VERY_FREQUENT_COMPONENT> m_meshVBO;
+		PersistentVector<const std::vector<std::uint32_t>*, constants::VERY_FREQUENT_COMPONENT> m_meshIndices;
 		PersistentVector<const GladMaterialImpl*, constants::VERY_FREQUENT_COMPONENT> m_material;
 
 		std::shared_ptr<GladResourceManager> m_resourceManager;

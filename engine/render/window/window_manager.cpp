@@ -4,9 +4,9 @@
 
 namespace engine
 {
-	WindowManager::WindowManager(std::shared_ptr<InputSystem> inputSystem)
+	WindowManager::WindowManager(std::shared_ptr<InputSystemAccessor> inputSystemAccessor)
 	{
-		m_internal = std::make_unique<Internal>(std::move(inputSystem));
+		m_internal = std::make_unique<Internal>(std::move(inputSystemAccessor));
 	}
 
 	WindowManager::~WindowManager()

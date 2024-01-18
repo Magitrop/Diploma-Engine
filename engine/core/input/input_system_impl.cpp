@@ -74,22 +74,47 @@ namespace engine
 		return m_modifiers;
 	}
 
+	void InputSystem::Internal::onFrameBegin()
+	{
+		m_mousePosition.lastFrame = m_mousePosition.thisFrame;
+
+		for (auto& mouse : m_mouse)
+			mouse.lastFrame = mouse.thisFrame;
+
+		for (auto& key : m_keys)
+			key.lastFrame = key.thisFrame;
+	}
+
 	void InputSystem::Internal::handleKey(GLFWwindow* window, int key, int scancode, int action, int mode)
 	{
-		DEBUG_LOG("{}", key);
+		if (key < 0)
+			return;
+
+		if (action == GLFW_PRESS)
+			m_keys[key].thisFrame = true;
+		else if (action == GLFW_RELEASE)
+			m_keys[key].thisFrame = false;
 	}
 
 	void InputSystem::Internal::handleCursorPosition(GLFWwindow* window, double x, double y)
 	{
+		m_mousePosition.thisFrame = { x, y };
 	}
 
 	void InputSystem::Internal::handleMouseButton(GLFWwindow* window, int button, int action, int mods)
 	{
-		DEBUG_LOG("{}", button);
+		if (button < 0)
+			return;
+
+		if (action == GLFW_PRESS)
+			m_mouse[button].thisFrame = true;
+		else if (action == GLFW_RELEASE)
+			m_mouse[button].thisFrame = false;
 	}
 
 	void InputSystem::Internal::handleScroll(GLFWwindow* window, double xoffset, double yoffset)
 	{
+		m_mouseWheelOffset = { xoffset, yoffset };
 	}
 
 	void InputSystem::Internal::EventsHandler::handleKey(GLFWwindow* window, int key, int scancode, int action, int mode)

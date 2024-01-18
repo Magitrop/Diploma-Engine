@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/editor/viewport/editor_camera.h>
+#include <engine/editor/gui/editor_viewport_window.h>
 #include <engine/executable/production_runtime_pipeline.h>
 #include <engine/render/window/window.h>
 
@@ -29,8 +29,8 @@ namespace engine
 		[[nodiscard]] bool createEditorWindow();
 		[[nodiscard]] bool initializeImGui();
 		[[nodiscard]] virtual bool initializeRenderPipeline() override;
-		EditorCamera createEditorViewport(std::size_t initialViewportWidth,
-										  std::size_t initialViewportHeight);
+		EditorViewportWindow createEditorViewport(std::size_t initialViewportWidth,
+												  std::size_t initialViewportHeight);
 
 		void finalizeImGui();
 

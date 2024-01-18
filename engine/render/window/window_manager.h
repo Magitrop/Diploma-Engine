@@ -7,7 +7,7 @@
 
 namespace engine
 {
-	class InputSystem;
+	class InputSystemAccessor;
 	// A factory and container for Window objects.
 	class WindowManager final
 	{
@@ -18,7 +18,7 @@ namespace engine
 
 		// members
 	private:
-		explicit WindowManager(std::shared_ptr<InputSystem> inputSystem);
+		explicit WindowManager(std::shared_ptr<InputSystemAccessor> inputSystemAccessor);
 
 	public:
 		~WindowManager();

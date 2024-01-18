@@ -10,8 +10,6 @@ namespace engine
 	public:
 		explicit Internal();
 
-		void connectCallbacksToWindow(GLFWwindow* window);
-
 		Vector2 mousePosition() const;
 		Vector2 mouseMotion() const;
 		float mouseWheel() const;
@@ -25,6 +23,11 @@ namespace engine
 		bool onKeyUp(KeyCode keyCode) const;
 
 		KeyModifiers modifiers() const;
+
+		void connectCallbacksToWindow(GLFWwindow* window);
+
+		// called by the Runtime and the end of a frame
+		void onFrameBegin();
 
 	private:
 		void handleKey(GLFWwindow* window, int key, int scancode, int action, int mode);

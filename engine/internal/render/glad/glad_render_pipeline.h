@@ -27,7 +27,8 @@ namespace engine
 
 	private:
 #if IS_EDITOR
-		virtual bool initialize(std::shared_ptr<EditorViewports> viewports) override;
+		virtual bool initialize(std::shared_ptr<EditorViewports> viewports,
+								std::shared_ptr<InputSystem> inputSystem) override;
 		virtual std::shared_ptr<IFramebuffer> createFramebuffer(std::uint32_t width,
 																std::uint32_t height) override;
 		virtual void renderEditorViewports() override;

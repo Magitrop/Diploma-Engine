@@ -13,6 +13,7 @@
 #include <engine/core/components/transform_component.h>
 #include <engine/core/entity/entity_manager.h>
 #include <engine/core/input/input_system_impl.h>
+#include <engine/core/input/input_system_accessor.h>
 #include <engine/core/resources/resource_registrar.h>
 #include <engine/core/time/time_manager.h>
 
@@ -86,7 +87,8 @@ namespace engine
 
 		DEBUG_LOG("Initializing input system...");
 		m_inputSystem = std::shared_ptr<InputSystem>(new InputSystem());
-		return m_inputSystem != nullptr;
+		m_inputSystemAccessor = std::shared_ptr<InputSystemAccessor>(new InputSystemAccessor(m_inputSystem));
+		return m_inputSystem != nullptr && m_inputSystemAccessor != nullptr;
 	}
 
 	bool ProductionRuntimePipeline::initializeWindowManager()
@@ -94,7 +96,7 @@ namespace engine
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Initializing window manager...");
-		m_windowManager = std::shared_ptr<WindowManager>(new WindowManager(m_inputSystem));
+		m_windowManager = std::shared_ptr<WindowManager>(new WindowManager(m_inputSystemAccessor));
 		return m_windowManager != nullptr;
 	}
 

@@ -21,7 +21,7 @@ namespace engine
 	public:
 		GladMeshAccessor(GladMeshImpl* impl);
 
-		virtual void setVertices(std::vector<Vertex>&& vertices) override;
+		virtual void setVertices(std::vector<Vertex>&& vertices, std::vector<std::uint32_t>&& indices) override;
 
 	private:
 		GladMeshImpl* m_impl;
@@ -40,10 +40,12 @@ namespace engine
 		GladMeshImpl(MeshID id);
 		~GladMeshImpl();
 
-		void setVertices(std::vector<Vertex>&& vertices);
+		void setVertices(std::vector<Vertex>&& vertices, std::vector<std::uint32_t>&& indices);
 
 		GLuint VAO() const;
 		GLuint VBO() const;
+		GLuint EBO() const;
+		const std::vector<std::uint32_t>* indices() const;
 
 		void connectOnMeshChanged(std::function<void(MeshID)> action) const;
 
@@ -51,7 +53,9 @@ namespace engine
 		MeshID m_id;
 		GLuint m_VAO; // Vertex array object.
 		GLuint m_VBO; // Vertex buffer object.
+		GLuint m_EBO; // Element buffer object.
 		std::vector<Vertex> m_vertices;
+		std::vector<std::uint32_t> m_indices;
 
 		SignalEmitter<void(MeshID)> m_onMeshChanged;
 	};

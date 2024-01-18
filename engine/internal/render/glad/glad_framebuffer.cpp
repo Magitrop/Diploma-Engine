@@ -40,10 +40,28 @@ namespace engine
         return m_height;
     }
 
+    float GladFramebuffer::aspectRatio() const
+    {
+        return static_cast<float>(m_width) / static_cast<float>(m_height);
+    }
+
     ImTextureID GladFramebuffer::textureID() const
     {
         // suppressing the C4312 warning
         return ImTextureID(static_cast<std::size_t>(m_opaqueTexture));
+    }
+
+    void GladFramebuffer::setSize(std::uint32_t x, std::uint32_t y)
+    {
+        if (m_width == x && m_height == y)
+            return;
+
+        m_width = x;
+        m_height = y;
+
+        glBindTexture(GL_TEXTURE_2D, m_opaqueTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     GLuint GladFramebuffer::FBO() const
@@ -51,7 +69,7 @@ namespace engine
         return m_FBO;
     }
 
-    GladFramebuffer::ScopedFramebuffer GladFramebuffer::useFramebuffer()
+    ScopedFramebuffer GladFramebuffer::useFramebuffer()
     {
         return ScopedFramebuffer(m_FBO);
     }

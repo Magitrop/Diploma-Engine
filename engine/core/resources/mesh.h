@@ -37,6 +37,6 @@ namespace engine
 	class MeshAccessor
 	{
 	public:
-		virtual void setVertices(std::vector<Vertex>&& vertices) {};
+		virtual void setVertices(std::vector<Vertex>&& vertices, std::vector<std::uint32_t>&& indices) {};
 	};
 } // namespace engine

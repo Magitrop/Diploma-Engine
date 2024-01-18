@@ -19,7 +19,7 @@ namespace engine
 
 		m_meshID.push(MeshID());
 		m_meshVAO.push(GLuint());
-		m_meshVBO.push(GLuint());
+		m_meshIndices.push(nullptr);
 		m_material.push(m_resourceManager->getDefaultMaterial());
 	}
 
@@ -29,7 +29,7 @@ namespace engine
 
 		m_meshID.remove(m_meshID.begin() + component);
 		m_meshVAO.remove(m_meshVAO.begin() + component);
-		m_meshVBO.remove(m_meshVBO.begin() + component);
+		m_meshIndices.remove(m_meshIndices.begin() + component);
 		m_material.remove(m_material.begin() + component);
 	}
 
@@ -50,7 +50,7 @@ namespace engine
 
 		m_meshID.at(componentID)->get() = meshID;
 		m_meshVAO.at(componentID)->get() = mesh->VAO();
-		m_meshVBO.at(componentID)->get() = mesh->VBO();
+		m_meshIndices.at(componentID)->get() = mesh->indices();
 	}
 
 	void GladMeshRendererInternal::updateMeshesWithID(MeshID id)
@@ -69,7 +69,7 @@ namespace engine
 			if (id == m_meshID.at(i)->get())
 			{
 				m_meshVAO.at(i)->get() = mesh->VAO();
-				m_meshVBO.at(i)->get() = mesh->VBO();
+				m_meshIndices.at(i)->get() = mesh->indices();
 			}
 		}
 	}

@@ -7,10 +7,11 @@
 struct GLFWwindow;
 namespace engine
 {
+	class InputSystemAccessor;
 	class WindowManager::Internal final
 	{
 	public:
-		Internal(std::shared_ptr<InputSystem> inputSystem);
+		Internal(std::shared_ptr<InputSystemAccessor> inputSystemAccessor);
 		~Internal();
 
 		WindowID createWindow(std::size_t width,
@@ -36,6 +37,6 @@ namespace engine
 		PersistentVector<GLFWwindow*, 8> m_createdWindows; // it is rather unlikely to have more than 8 windows at once
 		WindowID m_currentContextWindowID{ static_cast<std::size_t>(-1) };
 
-		std::shared_ptr<InputSystem> m_inputSystem;
+		std::shared_ptr<InputSystemAccessor> m_inputSystemAccessor;
 	};
 } // namespace engine

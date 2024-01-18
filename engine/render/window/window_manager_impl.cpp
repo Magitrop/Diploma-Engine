@@ -1,7 +1,8 @@
 #include "window_manager_impl.h"
 
-#include <engine/core/input/input_system_impl.h>
+#include <engine/core/input/input_system_accessor.h>
 #include <engine/debug/memory/memory_guard.h>
+#include <engine/dependencies/glfw/include/GLFW/glfw3.h>
 
 namespace engine
 {
@@ -37,15 +38,15 @@ namespace engine
 			return WindowID();
 		}
 
-		m_inputSystem->m_internal->connectCallbacksToWindow(window);
+		m_inputSystemAccessor->connectCallbacksToWindow(window);
 
 		return WindowID(m_createdWindows.push(window).getIndex());
 	}
 
-	WindowManager::Internal::Internal(std::shared_ptr<InputSystem> inputSystem)
-		: m_inputSystem(std::move(inputSystem))
+	WindowManager::Internal::Internal(std::shared_ptr<InputSystemAccessor> inputSystemAccessor)
+		: m_inputSystemAccessor(std::move(inputSystemAccessor))
 	{
-		DEBUG_ASSERT(m_inputSystem != nullptr);
+		DEBUG_ASSERT(m_inputSystemAccessor != nullptr);
 	}
 
 	WindowManager::Internal::~Internal()
