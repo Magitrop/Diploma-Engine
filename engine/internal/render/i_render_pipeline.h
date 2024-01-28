@@ -3,9 +3,6 @@
 #include <memory>
 
 #include <engine/internal/core/constants/runtime_constants.h>
-#include <engine/internal/helpers/persistent_vector.h>
-#include <engine/editor/viewport/editor_camera.h>
-#include <engine/editor/gui/editor_viewport_window.h>
 
 namespace engine
 {
@@ -19,7 +16,12 @@ namespace engine
 		virtual float aspectRatio() const = 0;
 	};
 
-	class EditorViewports;
+#if IS_EDITOR
+	class EditorViewportsManager;
+	class EditorDrawerContext;
+	class EditorDrawer;
+#endif // #if IS_EDITOR
+	class CameraComponent;
 	class InputSystem;
 	class IRenderPipeline
 	{
@@ -27,22 +29,21 @@ namespace engine
 	private:
 		friend class EditorRuntimePipeline;
 		friend class ProductionRuntimePipeline;
+#if IS_EDITOR
+		friend class Editor;
+#endif // #if IS_EDITOR
 
 		// members
 	protected:
 #if IS_EDITOR
-		virtual bool initialize(std::shared_ptr<EditorViewports> viewports,
-								std::shared_ptr<InputSystem> inputSystem) = 0;
+		virtual bool initialize(std::shared_ptr<EditorViewportsManager> viewports,
+								std::shared_ptr<EditorDrawer> editorDrawer) = 0;
+
 		virtual void renderEditorViewports() = 0;
 		virtual void renderEditorSimulation() = 0;
 		
-		EditorViewportWindow createEditorViewport(std::uint32_t initialViewportWidth,
-												  std::uint32_t initialViewportHeight);
 		virtual std::shared_ptr<IFramebuffer> createFramebuffer(std::uint32_t width,
 																std::uint32_t height) = 0;
-
-		std::shared_ptr<EditorViewports> m_editorViewports;
-		std::shared_ptr<InputSystem> m_inputSystem;
 #else
 		virtual bool initialize(std::shared_ptr<CameraComponent> cameraComponent) = 0;
 		virtual void renderFrame() = 0;

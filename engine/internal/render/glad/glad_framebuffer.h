@@ -39,7 +39,7 @@ namespace engine
 		virtual float aspectRatio() const override;
 #if IS_EDITOR
 		virtual ImTextureID textureID() const override;
-		virtual void setSize(std::uint32_t x, std::uint32_t y) override;
+		virtual bool setSize(std::uint32_t x, std::uint32_t y) override;
 #endif // #if IS_EDITOR
 		GLuint FBO() const;
 

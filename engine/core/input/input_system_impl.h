@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include <engine/core/input/input_system.h>
 #include <engine/dependencies/glfw/include/GLFW/glfw3.h>
 
@@ -36,7 +38,7 @@ namespace engine
 		void handleScroll(GLFWwindow* window, double xoffset, double yoffset);
 
 		template<typename T>
-		struct InputState
+		struct InputState final
 		{
 			T lastFrame{};
 			T thisFrame{};

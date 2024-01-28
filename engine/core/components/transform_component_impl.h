@@ -14,14 +14,14 @@ namespace engine
 		TransformInternal() = default;
 		~TransformInternal() = default;
 
-		TransformRef getTransform(ComponentID id);
+		//TransformRef getTransform(ComponentID id);
 
 		virtual void attachComponent(ComponentID component) override;
 		virtual void detachComponent(ComponentID component) override;
 
+		Matrix4x4& modelMatrix(ComponentID id);
+
 	private:
-		PersistentVector<Vector3, constants::VERY_FREQUENT_COMPONENT> m_position;
-		PersistentVector<Quaternion, constants::VERY_FREQUENT_COMPONENT> m_rotation;
-		PersistentVector<Vector3, constants::VERY_FREQUENT_COMPONENT> m_scale;
+		PersistentVector<Matrix4x4, constants::VERY_FREQUENT_COMPONENT> m_modelMatrix;
 	};
 } // namespace engine

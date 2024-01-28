@@ -24,6 +24,8 @@ namespace engine
 		EntityID createEntity();
 		void destroyEntity(EntityID entity);
 
+		std::shared_ptr<ComponentRegistrar> getRegistrar();
+
 	private:
 		std::unordered_map<std::size_t, PersistentVector<EntityID, constants::COMPONENT_OWNERS_PER_PAGE>> m_componentOwners;
 

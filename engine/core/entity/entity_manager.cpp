@@ -20,29 +20,34 @@ namespace engine
 	EntityManager::~EntityManager()
 	{}
 
-	ComponentID EntityManager::attachComponentInternal(EntityID entity, std::size_t uniqueComponentID)
+	ComponentID EntityManager::attachComponentInternal(EntityID entity, std::string componentName)
 	{
-		return m_internal->attachComponent(entity, uniqueComponentID);
+		std::size_t uniqueID = m_internal->getRegistrar()->getComponentIDByName(componentName);
+		return m_internal->attachComponent(entity, uniqueID);
 	}
 
-	void EntityManager::detachComponentInternal(EntityID entity, std::size_t uniqueComponentID)
+	void EntityManager::detachComponentInternal(EntityID entity, std::string componentName)
 	{
-		m_internal->detachComponent(entity, uniqueComponentID);
+		std::size_t uniqueID = m_internal->getRegistrar()->getComponentIDByName(componentName);
+		m_internal->detachComponent(entity, uniqueID);
 	}
 
-	ComponentID EntityManager::getComponentInternal(EntityID entity, std::size_t uniqueComponentID)
+	ComponentID EntityManager::getComponentInternal(EntityID entity, std::string componentName)
 	{
-		return m_internal->getComponent(entity, uniqueComponentID);
+		std::size_t uniqueID = m_internal->getRegistrar()->getComponentIDByName(componentName);
+		return m_internal->getComponent(entity, uniqueID);
 	}
 
-	std::shared_ptr<ComponentManager> EntityManager::getComponentManagerInternal(std::size_t uniqueComponentID)
+	std::shared_ptr<ComponentManager> EntityManager::getComponentManagerInternal(std::string componentName)
 	{
-		return m_internal->getComponentManager(uniqueComponentID);
+		std::size_t uniqueID = m_internal->getRegistrar()->getComponentIDByName(componentName);
+		return m_internal->getComponentManager(uniqueID);
 	}
 
-	bool EntityManager::hasComponentInternal(EntityID entity, std::size_t uniqueComponentID)
+	bool EntityManager::hasComponentInternal(EntityID entity, std::string componentName)
 	{
-		return m_internal->hasComponent(entity, uniqueComponentID);
+		std::size_t uniqueID = m_internal->getRegistrar()->getComponentIDByName(componentName);
+		return m_internal->hasComponent(entity, uniqueID);
 	}
 
 	EntityID EntityManager::createEntity()

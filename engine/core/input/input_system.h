@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include <engine/core/input/codes.h>
 #include <engine/core/math/vector2.h>

@@ -43,11 +43,11 @@ namespace engine
 		void destroyEntity(EntityID entity);
 
 	private:
-		ComponentID attachComponentInternal(EntityID entity, std::size_t uniqueComponentID);
-		void detachComponentInternal(EntityID entity, std::size_t uniqueComponentID);
-		ComponentID getComponentInternal(EntityID entity, std::size_t uniqueComponentID);
-		bool hasComponentInternal(EntityID entity, std::size_t uniqueComponentID);
-		std::shared_ptr<ComponentManager> getComponentManagerInternal(std::size_t uniqueComponentID);
+		ComponentID attachComponentInternal(EntityID entity, std::string componentName);
+		void detachComponentInternal(EntityID entity, std::string componentName);
+		ComponentID getComponentInternal(EntityID entity, std::string componentName);
+		bool hasComponentInternal(EntityID entity, std::string componentName);
+		std::shared_ptr<ComponentManager> getComponentManagerInternal(std::string componentName);
 
 		class Internal;
 		std::unique_ptr<Internal> m_internal;
@@ -56,30 +56,30 @@ namespace engine
 	template<typename Component>
 	ComponentID EntityManager::attachComponent(EntityID entity)
 	{
-		return attachComponentInternal(entity, Component::getUniqueComponentID());
+		return attachComponentInternal(entity, getBuiltinComponentName<Component>());
 	}
 
 	template<typename Component>
 	void EntityManager::detachComponent(EntityID entity)
 	{
-		detachComponentInternal(entity, Component::getUniqueComponentID());
+		detachComponentInternal(entity, getBuiltinComponentName<Component>());
 	}
 
 	template<typename Component>
 	ComponentID EntityManager::getComponent(EntityID entity)
 	{
-		return getComponentInternal(entity, Component::getUniqueComponentID());
+		return getComponentInternal(entity, getBuiltinComponentName<Component>());
 	}
 
 	template<typename Component>
 	bool EntityManager::hasComponent(EntityID entity)
 	{
-		return hasComponentInternal(entity, Component::getUniqueComponentID());
+		return hasComponentInternal(entity, getBuiltinComponentName<Component>());
 	}
 
 	template<typename Component>
 	std::shared_ptr<Component> EntityManager::getComponentManager()
 	{
-		return std::dynamic_pointer_cast<Component>(getComponentManagerInternal(Component::getUniqueComponentID()));
+		return std::dynamic_pointer_cast<Component>(getComponentManagerInternal(getBuiltinComponentName<Component>()));
 	}
 } // namespace engine

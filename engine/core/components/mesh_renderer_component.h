@@ -10,4 +10,5 @@ namespace engine
 	public:
 		virtual void setMesh(ComponentID componentID, MeshID meshID) = 0;
 	};
+	DEFINE_COMPONENT(MeshRenderer)
 } // namespace engine

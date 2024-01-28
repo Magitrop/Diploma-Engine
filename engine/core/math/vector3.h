@@ -24,7 +24,7 @@ namespace engine
 		static constexpr Vector3 down()		{ return Vector3(0,  -1, 0);  }
 		static constexpr Vector3 right()	{ return Vector3(1,  0,	 0);  }
 		static constexpr Vector3 left()		{ return Vector3(-1, 0,  0);  }
-		static constexpr Vector3 forward()	{ return Vector3(0,  0,	 -1);  }
-		static constexpr Vector3 backward()	{ return Vector3(0,  0,  1); }
+		static constexpr Vector3 forward()	{ return Vector3(0,  0,	 1);  }
+		static constexpr Vector3 backward()	{ return Vector3(0,  0,  -1); }
 	};
 } // namespace engine

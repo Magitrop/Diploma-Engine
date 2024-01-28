@@ -10,6 +10,7 @@ namespace engine
 	public:
 		virtual ImTextureID textureID() const = 0;
 
-		virtual void setSize(std::uint32_t x, std::uint32_t y) = 0;
+		// Returns whether the size of the framebuffer has changed.
+		virtual bool setSize(std::uint32_t x, std::uint32_t y) = 0;
 	};
 } // namespace engine

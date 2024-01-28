@@ -1,12 +1,12 @@
 #pragma once
 
-#include <engine/editor/gui/editor_viewport_window.h>
+#include <engine/editor/editor.h>
 #include <engine/executable/production_runtime_pipeline.h>
 #include <engine/render/window/window.h>
 
 namespace engine
 {
-	class EditorViewports;
+	class EditorViewportsManager;
 	class EditorRuntimePipeline final : public ProductionRuntimePipeline
 	{
 		// friends
@@ -23,18 +23,14 @@ namespace engine
 		virtual void finalize() override;
 		virtual void run() override;
 
-		[[nodiscard]] bool initializeEditor();
-
-		[[nodiscard]] bool initializeViewports();
 		[[nodiscard]] bool createEditorWindow();
+		[[nodiscard]] bool initializeEditor();
 		[[nodiscard]] bool initializeImGui();
 		[[nodiscard]] virtual bool initializeRenderPipeline() override;
-		EditorViewportWindow createEditorViewport(std::size_t initialViewportWidth,
-												  std::size_t initialViewportHeight);
 
 		void finalizeImGui();
 
 		WindowID m_editorWindow;
-		std::shared_ptr<EditorViewports> m_editorViewports;
+		std::shared_ptr<Editor> m_editor;
 	};
 } // namespace engine

@@ -27,12 +27,14 @@ namespace engine
 
 	private:
 #if IS_EDITOR
-		virtual bool initialize(std::shared_ptr<EditorViewports> viewports,
-								std::shared_ptr<InputSystem> inputSystem) override;
-		virtual std::shared_ptr<IFramebuffer> createFramebuffer(std::uint32_t width,
-																std::uint32_t height) override;
+		virtual bool initialize(std::shared_ptr<EditorViewportsManager> viewports,
+								std::shared_ptr<EditorDrawer> editorDrawer) override;
+
 		virtual void renderEditorViewports() override;
 		virtual void renderEditorSimulation() override;
+
+		virtual std::shared_ptr<IFramebuffer> createFramebuffer(std::uint32_t width,
+																std::uint32_t height) override;
 #else
 		virtual void renderFrame() override;
 #endif  // #if IS_EDITOR
@@ -42,5 +44,10 @@ namespace engine
 		std::shared_ptr<EntityManager> m_entityManager;
 		std::shared_ptr<GladResourceManager> m_resourceManager;
 		std::shared_ptr<GladMeshRendererInternal> m_meshRenderer;
+
+#if IS_EDITOR
+		std::shared_ptr<EditorViewportsManager> m_viewports;
+		std::shared_ptr<EditorDrawer> m_editorDrawer;
+#endif  // #if IS_EDITOR
 	};
 } // namespace engine

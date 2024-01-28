@@ -3,6 +3,7 @@
 #include <engine/core/components/builtin_component.h>
 #include <engine/core/components/component_internal_base.h>
 #include <engine/core/components/component_registrar.h>
+#include <engine/core/components/transform_component.h>
 #include <engine/debug/logging/debug_logger.h>
 #include <engine/debug/memory/memory_guard.h>
 
@@ -88,12 +89,15 @@ namespace engine
 
 		auto& componentOwners = m_componentOwners[uniqueComponentID];
 
-		std::size_t index = 0;
-		for (const auto& owner : componentOwners)
+		if (componentOwners.size() != 0)
 		{
-			if (owner.get() == entity)
-				return ComponentID(index);
-			++index;
+			std::size_t index = 0;
+			for (const auto& owner : componentOwners)
+			{
+				if (owner.get() == entity)
+					return ComponentID(index);
+				++index;
+			}
 		}
 
 		WARNING_LOG("Cannot get component. This entity does not have one. To check if an entity possesses some component use hasComponent function.");
@@ -120,7 +124,9 @@ namespace engine
 	{
 		MEMORY_GUARD;
 
-		return EntityID(m_entities.push(EntityWrapper()).getIndex());
+		EntityID entity = EntityID(m_entities.push(EntityWrapper()).getIndex());
+		attachComponent(entity, getRegistrar()->getComponentIDByName(getBuiltinComponentName<Transform>()));
+		return entity;
 	}
 
 	void EntityManager::Internal::destroyEntity(EntityID entity)
@@ -134,5 +140,10 @@ namespace engine
 				owners.remove(it);
 		}
 		m_entities.remove(m_entities.at(entity));
+	}
+
+	std::shared_ptr<ComponentRegistrar> EntityManager::Internal::getRegistrar()
+	{
+		return m_componentRegistrar;
 	}
 } // namespace engine

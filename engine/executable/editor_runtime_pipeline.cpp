@@ -8,16 +8,17 @@
 #include <engine/core/components/component_manager.h>
 #include <engine/core/components/component_registrar.h>
 #include <engine/core/entity/entity_manager.h>
-#include <engine/core/input/input_system_impl.h>
 #include <engine/core/input/input_system_accessor.h>
-#include <engine/core/math/vector4.h>
+#include <engine/core/input/input_system_impl.h>
 #include <engine/core/math/quaternion.h>
+#include <engine/core/math/vector4.h>
 #include <engine/core/resources/resource_manager.h>
 #include <engine/core/time/time_manager.h>
 
 #include <engine/debug/logging/debug_logger.h>
 #include <engine/debug/memory/memory_guard.h>
 
+#include <engine/editor/entity_selection.h>
 #include <engine/editor/gui/imgui_scoped_frame.h>
 #include <engine/editor/viewport/editor_framebuffer.h>
 
@@ -34,7 +35,6 @@
 namespace engine
 {
 	EditorRuntimePipeline::EditorRuntimePipeline()
-		: m_editorWindow(WindowID())
 	{}
 
 	bool EditorRuntimePipeline::initialize()
@@ -51,7 +51,7 @@ namespace engine
 		executor(&EditorRuntimePipeline::initializeGLFW);
 		executor(&EditorRuntimePipeline::initializeInputSystem);
 		executor(&EditorRuntimePipeline::initializeWindowManager);
-		executor(&EditorRuntimePipeline::initializeEditor);
+		executor(&EditorRuntimePipeline::createEditorWindow);
 		executor(&EditorRuntimePipeline::initializeGraphicAPI);
 		executor(&EditorRuntimePipeline::initializeTimeManager);
 		executor(&EditorRuntimePipeline::initializeComponentRegistrar);
@@ -62,6 +62,7 @@ namespace engine
 		executor(&EditorRuntimePipeline::registerBuiltinResources);
 
 		executor(&EditorRuntimePipeline::initializeRenderPipeline);
+		executor(&EditorRuntimePipeline::initializeEditor);
 
 		if (executor.result())
 			INFO_LOG("Initialization done.");
@@ -123,49 +124,18 @@ namespace engine
 		m_isRunning = true;
 		float x = 0;
 
+		m_editor->entitySelection()->select(entity);
+
 		while (isRunning())
 		{
 			ScopedTime timer = startDeltaTimer();
 
+			m_editor->tick();
+
 			m_inputSystemAccessor->onFrameBegin();
 			glfwPollEvents();
-
-			m_renderPipeline->renderEditorViewports();
-
-			// editor->draw
-			{
-				ImGuiScopedFrame imguiFrame;
-
-				m_editorViewports->draw();
-			}
-
-			m_windowManager->m_internal->swapBuffers(m_editorWindow);
+			m_windowManager->m_internal->swapBuffers(m_editor->getEditorWindow());
 		}
-	}
-
-	bool EditorRuntimePipeline::initializeEditor()
-	{
-		MEMORY_GUARD;
-
-		bool result = true;
-
-		DEBUG_LOG("Initializing editor...");
-
-		ScopedSequentialExecutor executor(this);
-
-		executor(&EditorRuntimePipeline::createEditorWindow);
-		executor(&EditorRuntimePipeline::initializeImGui);
-		executor(&EditorRuntimePipeline::initializeViewports);
-
-		return executor.result();
-	}
-
-	bool EditorRuntimePipeline::initializeViewports()
-	{
-		MEMORY_GUARD;
-
-		m_editorViewports = std::shared_ptr<EditorViewports>(new EditorViewports());
-		return m_editorViewports != nullptr;
 	}
 
 	bool EditorRuntimePipeline::createEditorWindow()
@@ -182,6 +152,37 @@ namespace engine
 
 		m_windowManager->setWindowAsCurrentContext(m_editorWindow);
 		return true;
+	}
+
+	bool EditorRuntimePipeline::initializeEditor()
+	{
+		MEMORY_GUARD;
+
+		bool result = true;
+
+		DEBUG_LOG("Initializing editor...");
+
+		DEBUG_ASSERT(m_windowManager != nullptr);
+		DEBUG_ASSERT(m_renderPipeline != nullptr);
+		DEBUG_ASSERT(m_inputSystem != nullptr);
+		DEBUG_ASSERT(m_entityManager != nullptr);
+		m_editor = std::make_shared<Editor>(
+			m_editorWindow,
+			m_windowManager,
+			m_renderPipeline,
+			m_inputSystem,
+			m_entityManager,
+			m_resourceManager
+		);
+
+		result &= initializeImGui();
+		result &= m_editor->initialize();
+		result &= m_renderPipeline->initialize(
+			m_editor->viewportsManager(),
+			m_editor->drawer()
+		);
+
+		return result;
 	}
 
 	bool EditorRuntimePipeline::initializeImGui()
@@ -213,17 +214,9 @@ namespace engine
 		bool result = true;
 
 		result &= Base::initializeRenderPipeline();
-		result &= m_renderPipeline->initialize(m_editorViewports, m_inputSystem);
+		DEBUG_ASSERT(m_renderPipeline != nullptr);
 
-		createEditorViewport(400, 400);
-		createEditorViewport(400, 400);
 		return result;
-	}
-
-	EditorViewportWindow EditorRuntimePipeline::createEditorViewport(std::size_t initialViewportWidth,
-																	 std::size_t initialViewportHeight)
-	{
-		return m_renderPipeline->createEditorViewport(initialViewportWidth, initialViewportHeight);
 	}
 
 	void EditorRuntimePipeline::finalizeImGui()

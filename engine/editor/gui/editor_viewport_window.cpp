@@ -1,184 +1,127 @@
 #include "editor_viewport_window.h"
 
+#include <format>
+
 #include <engine/core/input/input_system.h>
+#include <engine/core/math/vector3.h>
+
 #include <engine/editor/viewport/editor_framebuffer.h>
 
+#include <engine/dependencies/glm/glm/ext/matrix_clip_space.hpp>
+#include <engine/dependencies/glm/glm/ext/matrix_transform.hpp>
 #include <engine/dependencies/glm/glm/geometric.hpp>
 #include <engine/dependencies/glm/glm/trigonometric.hpp>
 
 namespace engine
 {
-	EditorViewportWindow::EditorViewportWindow(std::shared_ptr<InputSystem> inputSystem,
-											   EditorCamera camera,
-											   std::size_t index)
-		: m_inputSystem(inputSystem)
-		, m_editorCamera(camera)
-		, m_viewportIndex(index)
+	constexpr Vector3 DEFAULT_CAMERA_POSITION = Vector3::zero();
+	constexpr Vector3 DEFAULT_CAMERA_ANGLES = Vector3::zero();
+	constexpr Vector3 DEFAULT_CAMERA_FORWARD = Vector3::forward();
+	constexpr float DEFAULT_FOV = 60.0f;
+	constexpr float DEFAULT_NEAR_CLIP_PLANE = 0.1f;
+	constexpr float DEFAULT_FAR_CLIP_PLANE = 100.0f;
+	constexpr std::uint32_t DEFAULT_VIEWPORT_WIDTH = 512;
+	constexpr std::uint32_t DEFAULT_VIEWPORT_HEIGHT = 512;
+
+	EditorViewportWindow::EditorViewportWindow(std::shared_ptr<IFramebuffer> framebuffer,
+											   EditorViewportsManager* viewportsManager,
+											   std::size_t viewportIndex)
+		: m_isHovered(false)
+		, m_isFocused(false)
+		, m_framebuffer(framebuffer)
+		, m_viewportsManager(viewportsManager)
+		, m_viewportIndex(viewportIndex)
+		, m_viewport(EditorViewport(DEFAULT_VIEWPORT_WIDTH, DEFAULT_VIEWPORT_HEIGHT))
 	{}
 
-	void EditorViewportWindow::draw() const
+	EditorViewportWindow::EditorViewportWindow()
+		: m_isHovered(false)
+		, m_isFocused(false)
+		, m_framebuffer(nullptr)
+		, m_viewportsManager(nullptr)
+		, m_viewportIndex(static_cast<std::size_t>(-1))
+		, m_viewport(EditorViewport())
+	{}
+
+	bool EditorViewportWindow::isHovered() const
+	{
+		return m_isHovered;
+	}
+
+	bool EditorViewportWindow::isFocused() const
+	{
+		return m_isFocused;
+	}
+
+	void EditorViewportWindow::focus()
+	{
+		m_wantFocus = true;
+	}
+
+	EditorViewport& EditorViewportWindow::viewport()
+	{
+		return m_viewport;
+	}
+
+	void EditorViewportWindow::draw()
 	{
 		std::string viewportName = std::format("Viewport {}", m_viewportIndex);
 
 		if (ImGui::Begin(viewportName.c_str(), nullptr, ImGuiWindowFlags_NoCollapse))
 		{
-			EditorFramebuffer* framebuffer = static_cast<EditorFramebuffer*>(m_editorCamera.framebuffer.get());
-			ImVec2 size = ImVec2(m_editorCamera.framebuffer->width(), m_editorCamera.framebuffer->height());
+			if (m_wantFocus)
+			{
+				ImGui::SetWindowFocus();
+			}
+
+			EditorFramebuffer* framebuffer = static_cast<EditorFramebuffer*>(m_framebuffer.get());
+			ImVec2 size = ImVec2(framebuffer->width(), framebuffer->height());
 			ImGui::Image(framebuffer->textureID(), size);
 
-			if (m_inputSystem->onMouseButtonDown(MouseButton::Right))
-			{
-				if (ImGui::IsWindowHovered())
-				{
-					ImGui::SetWindowFocus();
-				}
-			}
-
-			if (m_inputSystem->isMouseButtonPressed(MouseButton::Right))
-			{
-				if (ImGui::IsWindowFocused())
-				{
-					Vector2 mouse = m_inputSystem->mouseMotion();
-
-					float yaw = mouse.x * EditorCamera::CAMERA_SENSITIVITY.x;
-					float pitch = mouse.y * EditorCamera::CAMERA_SENSITIVITY.y;
-
-					m_editorCamera.cameraAngles.x -= yaw;
-					m_editorCamera.cameraAngles.y -= pitch;
-					m_editorCamera.cameraAngles.y = std::clamp(m_editorCamera.cameraAngles.y, -89.0f, 89.0f);
-
-					Vector3 cameraForward;
-					cameraForward.x = cos(glm::radians(m_editorCamera.cameraAngles.x)) * cos(glm::radians(m_editorCamera.cameraAngles.y));
-					cameraForward.y = sin(glm::radians(m_editorCamera.cameraAngles.y));
-					cameraForward.z = sin(glm::radians(m_editorCamera.cameraAngles.x)) * cos(glm::radians(m_editorCamera.cameraAngles.y));
-					cameraForward = glm::normalize(cameraForward);
-
-					if (m_inputSystem->isKeyPressed(KeyCode::W))
-					{
-						m_editorCamera.cameraPosition += cameraForward * m_editorCamera.CAMERA_SPEED;
-					}
-					else if (m_inputSystem->isKeyPressed(KeyCode::S))
-					{
-						m_editorCamera.cameraPosition -= cameraForward * m_editorCamera.CAMERA_SPEED;
-					}
-
-					if (m_inputSystem->isKeyPressed(KeyCode::D))
-					{
-						Vector3 cameraLeft = glm::normalize(glm::cross(cameraForward, Vector3::up()));
-						m_editorCamera.cameraPosition -= cameraLeft * m_editorCamera.CAMERA_SPEED;
-					}
-					else if (m_inputSystem->isKeyPressed(KeyCode::A))
-					{
-						Vector3 cameraLeft = glm::normalize(glm::cross(cameraForward, Vector3::up()));
-						m_editorCamera.cameraPosition += cameraLeft * m_editorCamera.CAMERA_SPEED;
-					}
-				}
-			}
+			m_isHovered = ImGui::IsWindowHovered();
+			m_isFocused = ImGui::IsWindowFocused();
 
 			ImVec2 currentSize = ImGui::GetWindowSize();
-			framebuffer->setSize(currentSize.x, currentSize.y);
+			if (framebuffer->setSize(currentSize.x, currentSize.y))
+			{
+				m_viewport.setAspects(currentSize.x, currentSize.y);
+			}
 		}
 		ImGui::End();
 	}
 
-	constexpr Vector3 DEFAULT_EYE_POSITION = Vector3::zero();
-	constexpr Vector3 DEFAULT_EYE_ANGLES = Vector3::zero();
-	constexpr float DEFAULT_FOV = 60.0f;
-	constexpr float DEFAULT_NEAR_CLIP_PLANE = 0.1f;
-	constexpr float DEFAULT_FAR_CLIP_PLANE = 100.0f;
-
-	EditorViewportWindow EditorViewports::createViewport(std::shared_ptr<IFramebuffer> framebuffer,
-														 std::shared_ptr<InputSystem> inputSystem)
+	void EditorViewportWindow::handleCameraInput(Vector2 mouseMotion, Vector3 movementInput,
+												 float movementSpeed, Vector2 sensitivity)
 	{
-		EditorCamera camera
-		{
-			m_eyePosition.push(DEFAULT_EYE_POSITION)->get(),
-			m_eyeAngles.push(DEFAULT_EYE_ANGLES)->get(),
-			m_fov.push(DEFAULT_FOV)->get(),
-			m_nearClipPlane.push(DEFAULT_NEAR_CLIP_PLANE)->get(),
-			m_farClipPlane.push(DEFAULT_FAR_CLIP_PLANE)->get(),
-			m_framebuffer.push(std::move(framebuffer))->get()
-		};
+		float yaw = -mouseMotion.x * sensitivity.x;
+		float pitch = -mouseMotion.y * sensitivity.y;
+		
+		m_viewport.rotateCameraBy(pitch, yaw);
 
-		std::shared_ptr<EditorViewportWindow> window(new EditorViewportWindow(std::move(inputSystem), camera, m_framebuffer.size()));
-		DEBUG_LOG("An Editor Viewport has been created.");
-		return *m_viewports.push(window)->get();
+		Vector3 cameraForward = m_viewport.cameraForward();
+		Vector3 cameraRight = glm::normalize(glm::cross(cameraForward, Vector3::down()));
+		Vector3 cameraUp = glm::normalize(glm::cross(cameraForward, cameraRight));
+		
+		Vector3 cameraPosition = m_viewport.cameraPosition();
+		cameraPosition += movementInput.x * movementSpeed * cameraRight;
+		cameraPosition += movementInput.y * movementSpeed * cameraUp;
+		cameraPosition += movementInput.z * movementSpeed * cameraForward;
+
+		m_viewport.setCameraPosition(cameraPosition);
 	}
 
-	void EditorViewports::draw() const
+	EditorViewportWindow& EditorViewportsManager::createViewport(std::shared_ptr<IFramebuffer> framebuffer,
+																 std::shared_ptr<InputSystem> inputSystem)
 	{
-		for (const auto& viewport : m_viewports)
-		{
-			viewport.get()->draw();
-		}
+		std::size_t viewportIndex = m_viewports.getNextEmptyIndex() + 1;
+		EditorViewportWindow viewport(std::move(framebuffer), this, viewportIndex);
+
+		DEBUG_LOG("An editor viewport has been created.");
+		return m_viewports.push(std::move(viewport))->get();
 	}
 
-	const EditorCameraIterator EditorViewports::begin() const
+	const EditorViewportsManager::Viewports& EditorViewportsManager::viewports()
 	{
-		return
-		{
-			m_eyePosition.begin(),
-			m_eyeAngles.begin(),
-			m_fov.begin(),
-			m_nearClipPlane.begin(),
-			m_farClipPlane.begin(),
-			m_framebuffer.begin()
-		};
-	}
-
-	const EditorCameraIterator EditorViewports::end() const
-	{
-		return
-		{
-			m_eyePosition.end(),
-			m_eyeAngles.end(),
-			m_fov.end(),
-			m_nearClipPlane.end(),
-			m_farClipPlane.end(),
-			m_framebuffer.end()
-		};
-	}
-
-	EditorCameraIterator& EditorCameraIterator::operator ++ ()
-	{
-		++cameraPositionIt;
-		++cameraAnglesIt;
-		++fovIt;
-		++nearClipPlaneIt;
-		++farClipPlaneIt;
-		++framebufferIt;
-		return *this;
-	}
-
-	bool EditorCameraIterator::operator!=(const EditorCameraIterator& other) const
-	{
-		bool result = true;
-
-		result &= cameraPositionIt	!= other.cameraPositionIt;
-		result &= cameraAnglesIt	!= other.cameraAnglesIt;
-		result &= fovIt				!= other.fovIt;
-		result &= nearClipPlaneIt	!= other.nearClipPlaneIt;
-		result &= farClipPlaneIt	!= other.farClipPlaneIt;
-		result &= framebufferIt		!= other.framebufferIt;
-
-		return result;
-	}
-
-	bool EditorCameraIterator::operator == (const EditorCameraIterator& other) const
-	{
-		return !operator != (other);
-	}
-
-	EditorCamera EditorCameraIterator::operator * ()
-	{
-		return
-		{
-			cameraPositionIt->get(),
-			cameraAnglesIt->get(),
-			fovIt->get(),
-			nearClipPlaneIt->get(),
-			farClipPlaneIt->get(),
-			framebufferIt->get(),
-		};
+		return m_viewports;
 	}
 } // namespace engine

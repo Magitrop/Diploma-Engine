@@ -28,13 +28,6 @@ namespace engine
 		void updateMeshesWithID(MeshID id);
 
 	private:
-		struct RenderContext
-		{
-
-		};
-
-		//std::unordered_map<MeshID, RenderContext> m_contexts;
-
 		PersistentVector<MeshID, constants::VERY_FREQUENT_COMPONENT> m_meshID;
 		PersistentVector<GLuint, constants::VERY_FREQUENT_COMPONENT> m_meshVAO;
 		PersistentVector<const std::vector<std::uint32_t>*, constants::VERY_FREQUENT_COMPONENT> m_meshIndices;

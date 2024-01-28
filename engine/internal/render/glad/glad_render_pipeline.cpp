@@ -8,6 +8,8 @@
 
 #if IS_EDITOR
 #include <engine/editor/gui/editor_viewport_window.h>
+#include <engine/editor/editor.h>
+#include <engine/editor/gizmo/editor_drawer.h>
 #endif // #if IS_EDITOR
 
 #include <engine/dependencies/glm/glm/ext/matrix_clip_space.hpp>
@@ -22,7 +24,7 @@ namespace engine
 	{
 		DEBUG_ASSERT(m_resourceManager != nullptr);
 
-		auto renderer = std::dynamic_pointer_cast<GladMeshRenderer>(entityManager->getComponentManager<Renderer>());
+		auto renderer = std::dynamic_pointer_cast<GladMeshRenderer>(entityManager->getComponentManager<MeshRenderer>());
 		DEBUG_ASSERT(renderer != nullptr);
 		m_meshRenderer = std::dynamic_pointer_cast<GladMeshRendererInternal>(renderer->m_internal);
 		DEBUG_ASSERT(m_meshRenderer != nullptr);
@@ -32,20 +34,21 @@ namespace engine
 	{}
 
 #if IS_EDITOR
-	bool GladRenderPipeline::initialize(std::shared_ptr<EditorViewports> viewports,
-										std::shared_ptr<InputSystem> inputSystem)
+	bool GladRenderPipeline::initialize(std::shared_ptr<EditorViewportsManager> viewports,
+										std::shared_ptr<EditorDrawer> editorDrawer)
 	{
 		bool result = true;
-
-		m_editorViewports = std::move(viewports);
-		m_inputSystem = std::move(inputSystem);
-		result &= m_editorViewports != nullptr;
-		result &= m_inputSystem != nullptr;
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
+
+		m_editorDrawer = std::move(editorDrawer);
+		DEBUG_ASSERT(m_editorDrawer != nullptr);
+
+		m_viewports = std::move(viewports);
+		DEBUG_ASSERT(m_viewports != nullptr);
 
 		return result;
 	}
@@ -60,35 +63,20 @@ namespace engine
 	{
 		MEMORY_GUARD;
 
-		EditorViewports viewports = *m_editorViewports.get();
-		for (const auto& camera : viewports)
+		for (auto& slot : m_viewports->viewports())
 		{
-			GladFramebuffer* framebuffer = static_cast<GladFramebuffer*>(camera.framebuffer.get());
+			if (slot.empty())
+				continue;
+			auto& window = slot.get();
+			auto& viewport = window.viewport();
+
+			GladFramebuffer* framebuffer = static_cast<GladFramebuffer*>(window.framebuffer().get());
 			ScopedFramebuffer scopedFramebuffer = framebuffer->useFramebuffer();
 			glViewport(0, 0, framebuffer->width(), framebuffer->height());
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			Matrix4x4 projectionMatrix =
-				glm::perspective(
-					glm::radians(camera.fov),
-					framebuffer->aspectRatio(),
-					camera.nearClipPlane,
-					camera.farClipPlane
-				);
-
-			Vector3 cameraForward;
-			cameraForward.x = cos(glm::radians(camera.cameraAngles.x)) * cos(glm::radians(camera.cameraAngles.y));
-			cameraForward.y = sin(glm::radians(camera.cameraAngles.y));
-			cameraForward.z = sin(glm::radians(camera.cameraAngles.x)) * cos(glm::radians(camera.cameraAngles.y));
-			cameraForward = glm::normalize(cameraForward);
-
-			Matrix4x4 viewMatrix =
-				glm::lookAt(
-					camera.cameraPosition,
-					camera.cameraPosition + cameraForward,
-					Vector3::down()
-				);
-
+			Matrix4x4 projectionMatrix = viewport.projection();
+			Matrix4x4 viewMatrix = viewport.view();
 			Matrix4x4 modelMatrix = Matrix4x4(1);
 
 			// TODO: realize material & shader sorting and corresponding rendering
@@ -108,6 +96,12 @@ namespace engine
 				glBindVertexArray(VAO);
 				glDrawElements(GL_TRIANGLES, indices->size(), GL_UNSIGNED_INT, &(*indices)[0]);
 			}
+
+			auto editorDrawerContext(std::move(m_editorDrawer->obtainContext()));
+			for (auto& primitive : editorDrawerContext.m_primitives)
+			{
+
+			}
 		}
 
 		glBindVertexArray(0);
@@ -116,8 +110,9 @@ namespace engine
 
 	void GladRenderPipeline::renderEditorSimulation()
 	{
-
+		MEMORY_GUARD;
 	}
+
 #else // #if IS_EDITOR
 	void GladRenderPipeline::renderFrame()
 	{

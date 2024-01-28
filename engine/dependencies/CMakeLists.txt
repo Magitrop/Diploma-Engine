@@ -51,6 +51,14 @@ FetchContent_Declare(spdlog
 FetchContent_MakeAvailable(spdlog)
 set_target_properties(spdlog PROPERTIES FOLDER "dependencies")
 
+# imguizmo
+#FetchContent_Declare(imguizmo
+#    GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+#    SOURCE_DIR ${LIBS_DIR}/imguizmo)
+#FetchContent_MakeAvailable(imguizmo)
+#set_target_properties(imguizmo PROPERTIES FOLDER "dependencies")
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/imguizmo)
+
 # imgui
 set(IMGUI_DIR ${LIBS_DIR}/imgui)
 FetchContent_Declare(imgui

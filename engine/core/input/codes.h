@@ -14,16 +14,16 @@ namespace engine
 		Minus			= 45, /* - */
 		Period			= 46, /* . */
 		Slash			= 47, /* / */
-		Key_0			= 48,
-		Key_1			= 49,
-		Key_2			= 50,
-		Key_3			= 51,
-		Key_4			= 52,
-		Key_5			= 53,
-		Key_6			= 54,
-		Key_7			= 55,
-		Key_8			= 56,
-		Key_9			= 57,
+		Key0			= 48, /* Digit 0 */
+		Key1			= 49, /* Digit 1 */
+		Key2			= 50, /* Digit 2 */
+		Key3			= 51, /* Digit 3 */
+		Key4			= 52, /* Digit 4 */
+		Key5			= 53, /* Digit 5 */
+		Key6			= 54, /* Digit 6 */
+		Key7			= 55, /* Digit 7 */
+		Key8			= 56, /* Digit 8 */
+		Key9			= 57, /* Digit 9 */
 		Semicolon		= 59, /* ; */
 		Equal			= 61, /* = */
 		A				= 65,

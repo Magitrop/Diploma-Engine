@@ -33,6 +33,8 @@ namespace engine
 		[[nodiscard]] std::shared_ptr<ComponentManager> getComponentManager(std::string componentName);
 		[[nodiscard]] std::shared_ptr<ComponentManager> getComponentManager(std::size_t uniqueComponentID);
 
+		[[nodiscard]] std::size_t getComponentIDByName(std::string componentName) const;
+
 	private:
 		std::size_t registerComponentInternal(std::shared_ptr<ComponentManager> manager, std::string componentName);
 		void unregisterComponentInternal(std::size_t uniqueComponentID);
@@ -44,7 +46,7 @@ namespace engine
 	template<typename Component>
 	std::size_t ComponentRegistrar::registerComponent(std::shared_ptr<Component> manager, std::string componentName)
 	{
-		return registerComponentInternal(manager, componentName);
+		return registerComponentInternal(std::move(manager), std::move(componentName));
 	}
 
 	template<typename Component>

@@ -51,10 +51,10 @@ namespace engine
         return ImTextureID(static_cast<std::size_t>(m_opaqueTexture));
     }
 
-    void GladFramebuffer::setSize(std::uint32_t x, std::uint32_t y)
+    bool GladFramebuffer::setSize(std::uint32_t x, std::uint32_t y)
     {
         if (m_width == x && m_height == y)
-            return;
+            return false;
 
         m_width = x;
         m_height = y;
@@ -62,6 +62,8 @@ namespace engine
         glBindTexture(GL_TEXTURE_2D, m_opaqueTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        return true;
     }
 
     GLuint GladFramebuffer::FBO() const

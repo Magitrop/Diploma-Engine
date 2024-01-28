@@ -133,6 +133,8 @@ namespace engine
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Initializing entity manager...");
+
+		DEBUG_ASSERT(m_componentRegistrar != nullptr);
 		m_entityManager = std::shared_ptr<EntityManager>(new EntityManager(m_componentRegistrar));
 		return m_entityManager != nullptr;
 	}
@@ -153,6 +155,7 @@ namespace engine
 
 		DEBUG_LOG("Registering built-in components...");
 
+		DEBUG_ASSERT(m_resourceManager != nullptr);
 		// TODO: remake with a proper macro (see serialization_helper.h)
 		m_componentRegistrar->registerComponent<Transform>(std::shared_ptr<Transform>(new Transform()), "Transform");
 		// TODO: abstract graphic API
@@ -167,6 +170,8 @@ namespace engine
 
 		DEBUG_LOG("Initializing render pipeline...");
 		// TODO: abstract graphic API
+		DEBUG_ASSERT(m_entityManager != nullptr);
+		DEBUG_ASSERT(m_resourceManager != nullptr);
 		m_renderPipeline = std::shared_ptr<IRenderPipeline>(
 			new GladRenderPipeline(m_entityManager,
 								   m_resourceManager)

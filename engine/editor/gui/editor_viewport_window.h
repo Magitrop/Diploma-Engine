@@ -2,78 +2,82 @@
 
 #include <memory>
 
+#include <engine/core/math/vector3.h>
+#include <engine/core/math/matrix4x4.h>
+
 #include <engine/dependencies/imgui/imgui.h>
-#include <engine/editor/viewport/editor_camera.h>
+
+#include <engine/internal/helpers/iterator_provider.h>
+#include <engine/internal/helpers/persistent_vector.h>
+#include <engine/internal/core/constants/editor_constants.h>
+
+#include <engine/editor/viewport/editor_viewport.h>
 
 namespace engine
 {
+	class IFramebuffer;
 	class InputSystem;
 	class EditorViewportWindow final
 	{
 	private:
-		friend class EditorViewports;
+		friend class Editor;
+		friend class EditorViewportsManager;
 
 	private:
-		explicit EditorViewportWindow(std::shared_ptr<InputSystem> inputSystem,
-									  EditorCamera camera,
-									  std::size_t index);
-
+		explicit EditorViewportWindow(std::shared_ptr<IFramebuffer> framebuffer,
+									  EditorViewportsManager* viewportsManager,
+									  std::size_t viewportIndex);
 	public:
+		// Creates an invalid viewport window.
+		explicit EditorViewportWindow();
 		//ImVec2 windowSize() const;
+		bool isHovered() const;
+		bool isFocused() const;
+
+		// Makes this ImGui viewport window focused.
+		void focus();
+
+		std::shared_ptr<IFramebuffer> framebuffer() const { return m_framebuffer; }
+
+		EditorViewport& viewport();
 
 	private:
-		void draw() const;
+		void draw();
+		void handleCameraInput(Vector2 mouseMotion, Vector3 movementInput,
+							   float movementSpeed, Vector2 sensitivity);
+		std::shared_ptr<IFramebuffer> m_framebuffer;
 
-		std::shared_ptr<InputSystem> m_inputSystem;
-		EditorCamera m_editorCamera;
-		//ImVec2 m_windowSize; // It is actually ImGui::GetContentRegionAvail()
 		std::size_t m_viewportIndex;
+		EditorViewportsManager* m_viewportsManager;
+
+		bool m_isHovered;
+		bool m_isFocused;
+		bool m_wantFocus = false;
+
+		EditorViewport m_viewport;
 	};
 
 	struct EditorCameraIterator;
 	// A manager for all editor cameras.
-	class EditorViewports final
+	class EditorViewportsManager final
 	{
 		// friends
 	private:
-		friend class IRenderPipeline;
+		friend class Editor;
 		friend struct EditorCameraIterator;
+		friend struct ViewportIterator;
 
 		// members
 	public:
-		explicit EditorViewports() = default;
+		using Viewports = PersistentVector<EditorViewportWindow, constants::VIEWPORTS_PER_PAGE>;
+		explicit EditorViewportsManager() = default;
 
-		// Draws all viewport ImGui windows.
-		void draw() const;
-
-		const EditorCameraIterator begin() const;
-		const EditorCameraIterator end() const;
+		const Viewports& viewports();
 
 	private:
-		EditorViewportWindow createViewport(std::shared_ptr<IFramebuffer> framebuffer,
-											std::shared_ptr<InputSystem> inputSystem);
+		EditorViewportWindow& createViewport(std::shared_ptr<IFramebuffer> framebuffer,
+											 std::shared_ptr<InputSystem> inputSystem);
 
-		PersistentVector<Vector3, constants::RENDER_CONTEXTS_PER_PAGE> m_eyePosition;
-		PersistentVector<Vector3, constants::RENDER_CONTEXTS_PER_PAGE> m_eyeAngles;
-		PersistentVector<float, constants::RENDER_CONTEXTS_PER_PAGE> m_fov;
-		PersistentVector<float, constants::RENDER_CONTEXTS_PER_PAGE> m_nearClipPlane;
-		PersistentVector<float, constants::RENDER_CONTEXTS_PER_PAGE> m_farClipPlane;
-		PersistentVector<std::shared_ptr<IFramebuffer>, constants::RENDER_CONTEXTS_PER_PAGE> m_framebuffer;
-		PersistentVector<std::shared_ptr<EditorViewportWindow>, constants::RENDER_CONTEXTS_PER_PAGE> m_viewports;
-	};
-
-	struct EditorCameraIterator
-	{
-		decltype(EditorViewports::m_eyePosition)::Iterator		cameraPositionIt;
-		decltype(EditorViewports::m_eyeAngles)::Iterator		cameraAnglesIt;
-		decltype(EditorViewports::m_fov)::Iterator				fovIt;
-		decltype(EditorViewports::m_nearClipPlane)::Iterator	nearClipPlaneIt;
-		decltype(EditorViewports::m_farClipPlane)::Iterator		farClipPlaneIt;
-		decltype(EditorViewports::m_framebuffer)::Iterator		framebufferIt;
-
-		EditorCamera operator * ();
-		EditorCameraIterator& operator ++();
-		bool operator != (const EditorCameraIterator& other) const;
-		bool operator == (const EditorCameraIterator& other) const;
+		Viewports m_viewports;
 	};
 } // namespace engine

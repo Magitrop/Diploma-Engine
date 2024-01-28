@@ -19,18 +19,19 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     engine::debug::logging
     engine::debug::memory
 
+    engine::editor
     engine::editor::gizmo
     engine::editor::gui
+    engine::editor::projects
     engine::editor::viewport
 
     engine::internal::core::constants
-    engine::internal::core::projects
     engine::internal::core::reflection
 
     engine::internal::helpers
 
-    engine::internal::render::glad_api
     engine::internal::render
+    engine::internal::render::glad_api
 
     engine::render::camera
     engine::render::lighting
@@ -42,6 +43,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glm
     spdlog
     imgui
+    imguizmo
 )
 
 set_target_properties(executable PROPERTIES FOLDER "executable")
