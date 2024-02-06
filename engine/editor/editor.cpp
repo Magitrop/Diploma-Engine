@@ -7,13 +7,16 @@
 
 #include <engine/debug/memory/memory_guard.h>
 
+#include <engine/editor/editor_selection.h>
 #include <engine/editor/entity_selection.h>
+#include <engine/editor/gizmo/gizmo_manager.h>
 #include <engine/editor/gui/editor_viewport_window.h>
 #include <engine/editor/gui/imgui_scoped_frame.h>
+#include <engine/editor/viewport/editor_framebuffer.h>
 
 #include <engine/internal/helpers/assert.h>
-#include <engine/internal/render/i_render_pipeline.h>
 #include <engine/internal/render/glad/glad_editor_drawer.h>
+#include <engine/internal/render/i_render_pipeline.h>
 
 #include <engine/render/window/window_manager.h>
 
@@ -52,8 +55,9 @@ namespace engine
 		bool result = true;
 
 		result &= initializeViewports();
-		result &= initializeSelectionManager();
+		result &= initializeSelectionManagers();
 		result &= initializeImGui();
+		result &= initializeGizmoManager();
 		result &= initializeDrawer();
 
 		createViewport();
@@ -66,6 +70,9 @@ namespace engine
 		drawEditorUI();
 
 		m_renderPipeline->renderEditorViewports();
+
+		auto pixel = m_editorSelection->handleSelection();
+		DEBUG_LOG("{} {} {} {} {}", pixel.color[0], pixel.color[1], pixel.color[2], pixel.color[3], pixel.depth);
 	}
 
 	void Editor::drawEditorUI()
@@ -78,7 +85,7 @@ namespace engine
 
 	void Editor::drawGizmos()
 	{
-		auto transformManager = m_entityManager->getComponentManager<Transform>();
+		/*auto transformManager = m_entityManager->getComponentManager<Transform>();
 		for (const auto& selected : m_entitySelection->selection())
 		{
 			ComponentID transform = m_entityManager->getComponent<Transform>(selected);
@@ -86,16 +93,19 @@ namespace engine
 			for (auto& window : m_editorViewports->viewports())
 			{
 				auto& viewport = window.get().viewport();
-
-				m_editorDrawer->drawSpatialGrid();
 			}
-		}
+		}*/
 	}
 
 	void Editor::createViewport()
 	{
-		auto framebuffer = m_renderPipeline->createFramebuffer(400, 400);
-		m_editorViewports->createViewport(framebuffer, m_inputSystem);
+		auto viewportFramebuffer = m_renderPipeline->createFramebuffer(400, 400);
+		auto selectionFramebuffer = m_renderPipeline->createFramebuffer(400, 400);
+		m_editorViewports->createViewport(
+			{
+				std::move(viewportFramebuffer),
+				std::move(selectionFramebuffer)
+			}, m_inputSystem);
 	}
 
 	WindowID Editor::getEditorWindow() const
@@ -113,30 +123,31 @@ namespace engine
 		return m_editorViewports;
 	}
 
-	std::shared_ptr<EditorDrawer> Editor::drawer()
+	std::shared_ptr<IEditorDrawer> Editor::drawer()
 	{
 		return m_editorDrawer;
 	}
 
 	void Editor::drawViewports()
 	{
+		m_editorViewports->onBeforeDraw();
 		for (auto& slot : m_editorViewports->viewports())
 		{
 			if (slot.empty())
 				continue;
 			auto& viewport = slot.get();
 
-			viewport.draw();
+			if (viewport.isFocused())
+			{
+				handleViewportInput(viewport);
+			}
 
 			if (viewport.isHovered() && m_inputSystem->onMouseButtonDown(MouseButton::Right))
 			{
 				viewport.focus();
 			}
 
-			if (viewport.isFocused())
-			{
-				handleViewportInput(viewport);
-			}
+			viewport.draw();
 		}
 	}
 
@@ -214,12 +225,18 @@ namespace engine
 		return m_editorViewports != nullptr;
 	}
 
-	bool Editor::initializeSelectionManager()
+	bool Editor::initializeSelectionManagers()
 	{
 		MEMORY_GUARD;
 
 		m_entitySelection = std::shared_ptr<EntitySelection>(new EntitySelection());
-		return m_entitySelection != nullptr;
+		m_editorSelection = std::shared_ptr<EditorSelectionManager>(
+			new EditorSelectionManager(
+				m_editorViewports,
+				m_inputSystem,
+				m_entitySelection
+			));
+		return m_entitySelection != nullptr && m_editorSelection != nullptr;
 	}
 
 	bool Editor::initializeDrawer()
@@ -227,7 +244,21 @@ namespace engine
 		MEMORY_GUARD;
 
 		// TODO: abstract render pipeline
-		m_editorDrawer = std::shared_ptr<EditorDrawer>(new GladEditorDrawer(m_resourceManager));
+		m_editorDrawer = std::shared_ptr<IEditorDrawer>(
+			new GladEditorDrawer(
+				m_renderPipeline,
+				m_resourceManager,
+				m_gizmoManager
+			));
 		return m_editorDrawer != nullptr;
+	}
+
+	bool Editor::initializeGizmoManager()
+	{
+		MEMORY_GUARD;
+
+		// TODO: abstract render pipeline
+		m_gizmoManager = std::shared_ptr<GizmoManager>(new GizmoManager(m_entityManager));
+		return m_gizmoManager != nullptr;
 	}
 } // namespace engine

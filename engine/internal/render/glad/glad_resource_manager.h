@@ -26,7 +26,8 @@ namespace engine
 								   const GLchar* fragmentCode);
 
 		GladMaterialImpl* registerMaterial(std::string materialName,
-										   ShaderID shader);
+										   ShaderID shader,
+										   std::int8_t renderQueue);
 
 		/*virtual */ShaderID findShader(std::string name) const/* override*/;
 		virtual MaterialID findMaterial(std::string name) const override;

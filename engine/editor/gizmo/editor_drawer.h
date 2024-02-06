@@ -3,28 +3,39 @@
 #include <memory>
 #include <vector>
 
+#include <engine/core/math/matrix4x4.h>
+#include <engine/core/resources/mesh.h>
+#include <engine/core/resources/material.h>
+
 namespace engine
 {
-	struct EditorDrawerPrimitive
-	{
-		virtual ~EditorDrawerPrimitive() = 0;
-	};
-
-	struct EditorDrawerContext final
-	{
-		std::vector<EditorDrawerPrimitive> m_primitives;
-	};
-
-	class IRenderPipeline;
-	class ResourceManager;
-	class EditorDrawer
+	class IFramebuffer;
+	class IEditorDrawerContext
 	{
 	public:
-		virtual void drawSpatialGrid() = 0;
+		virtual ~IEditorDrawerContext() = 0;
 
-		[[nodiscard]] EditorDrawerContext obtainContext();
+		// Adds a box with given parameters to the drawer context.
+		// The pivot of the box is its center point.
+		virtual IEditorDrawerContext& box(Matrix4x4 transform,
+										  MaterialID material) = 0;
+		virtual IEditorDrawerContext& cone() = 0;
+		virtual IEditorDrawerContext& line() = 0;
+		virtual IEditorDrawerContext& mesh(std::vector<Vertex> vertices,
+										   std::vector<std::uint32_t> indices,
+										   Matrix4x4 transform,
+										   MaterialID material) = 0;
+	};
+
+	class IEditorDrawer
+	{
+	public:
+		using Context = std::shared_ptr<IEditorDrawerContext>;
+
+		[[nodiscard]] virtual Context& context() = 0;
 
 	protected:
-		EditorDrawerContext m_drawerContext{};
+		virtual void drawGizmo() = 0;
+		virtual void drawSpatialGrid() = 0;
 	};
 } // namespace engine

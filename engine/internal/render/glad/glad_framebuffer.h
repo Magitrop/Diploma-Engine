@@ -2,11 +2,12 @@
 
 #if IS_EDITOR
 #include <engine/editor/viewport/editor_framebuffer.h>
+#else
+#include <engine/internal/render/i_framebuffer.h>
 #endif // #if IS_EDITOR
 
 #include <engine/internal/helpers/non_copyable.h>
 #include <engine/internal/render/glad/glad_graphic_api.h>
-#include <engine/internal/render/glad/glad_render_pipeline.h>
 
 namespace engine
 {
@@ -45,11 +46,13 @@ namespace engine
 
 		[[nodiscard]] ScopedFramebuffer useFramebuffer();
 
+		virtual PixelInfo readPixel(std::uint32_t x, std::uint32_t y) override;
+
 	private:
 		std::uint32_t m_width;
 		std::uint32_t m_height;
 		GLuint m_FBO; // framebuffer object
 		GLuint m_opaqueTexture; // an opaque (color) texture for the framebuffer
-		// TODO: depth texture via renderbuffer
+		GLuint m_depthTexture; // a depth texture for the framebuffer
 	};
 } // namespace engine

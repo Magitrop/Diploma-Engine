@@ -125,7 +125,7 @@ namespace engine
 		MEMORY_GUARD;
 
 		EntityID entity = EntityID(m_entities.push(EntityWrapper()).getIndex());
-		attachComponent(entity, getRegistrar()->getComponentIDByName(getBuiltinComponentName<Transform>()));
+		attachComponent(entity, registrar()->getComponentIDByName(getBuiltinComponentName<Transform>()));
 		return entity;
 	}
 
@@ -142,7 +142,7 @@ namespace engine
 		m_entities.remove(m_entities.at(entity));
 	}
 
-	std::shared_ptr<ComponentRegistrar> EntityManager::Internal::getRegistrar()
+	std::shared_ptr<ComponentRegistrar> EntityManager::Internal::registrar()
 	{
 		return m_componentRegistrar;
 	}

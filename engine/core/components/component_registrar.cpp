@@ -37,8 +37,6 @@ namespace engine
 			return static_cast<std::size_t>(-1);
 		}
 
-		auto builtinComponent = std::dynamic_pointer_cast<BuiltinComponent>(manager);
-
 		std::size_t uniqueComponentID = m_registeredComponents.getNextEmptyIndex();
 		auto found = m_registeredComponents.find(
 			[&uniqueComponentID](const std::shared_ptr<ComponentManager>& entry)
@@ -52,8 +50,8 @@ namespace engine
 		}
 
 		m_nameToID[componentName] = uniqueComponentID;
-		builtinComponent->m_internal->setComponentName(componentName);
-		builtinComponent->m_internal->setUniqueComponentID(uniqueComponentID);
+		manager->m_internal->setComponentName(componentName);
+		manager->m_internal->setUniqueComponentID(uniqueComponentID);
 		return m_registeredComponents.push(std::move(manager)).getIndex();
 	}
 

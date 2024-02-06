@@ -19,6 +19,7 @@
 #include <engine/debug/memory/memory_guard.h>
 
 #include <engine/editor/entity_selection.h>
+#include <engine/editor/gizmo/editor_drawer.h>
 #include <engine/editor/gui/imgui_scoped_frame.h>
 #include <engine/editor/viewport/editor_framebuffer.h>
 
@@ -88,23 +89,10 @@ namespace engine
 
 		auto renderer = m_entityManager->getComponentManager<MeshRenderer>();
 		auto entity = m_entityManager->createEntity();
-		auto grid = m_entityManager->createEntity();
 		auto rendererID = m_entityManager->attachComponent<MeshRenderer>(entity);
-		auto gridID = m_entityManager->attachComponent<MeshRenderer>(grid);
 		auto materialID = m_resourceManager->findMaterial("default");
-		auto gridMaterial = m_resourceManager->findMaterial("editor_grid");
 		
-		auto meshID1 = m_resourceManager->createMesh();
-		std::vector<Vertex> v1;
-		std::vector<std::uint32_t> i1;
-		for (int i = 0; i < 6; ++i)
-		{
-			v1.emplace_back(Vector3::zero());
-			i1.emplace_back(i);
-		}
-		m_resourceManager->getMeshByID(meshID1)->setVertices(std::move(v1), std::move(i1));
-
-		auto meshID2 = m_resourceManager->createMesh();
+		auto meshID = m_resourceManager->createMesh();
 		std::vector<Vertex> v2
 		{
 			Vertex(Vector3(0, 0, 3)),
@@ -114,17 +102,22 @@ namespace engine
 		std::vector<std::uint32_t> i2;
 		for (int i = 0; i < 3; ++i)
 			i2.emplace_back(i);
-		m_resourceManager->getMeshByID(meshID2)->setVertices(std::move(v2), std::move(i2));
+		m_resourceManager->getMeshByID(meshID)->setVertices(std::move(v2), std::move(i2));
 
 		renderer->setMaterial(rendererID, materialID);
-		renderer->setMaterial(gridID, gridMaterial);
-		renderer->setMesh(gridID, meshID1);
-		renderer->setMesh(rendererID, meshID2);
+		renderer->setMesh(rendererID, meshID);
 
 		m_isRunning = true;
 		float x = 0;
 
 		m_editor->entitySelection()->select(entity);
+
+		Matrix4x4 model = Matrix4x4(1.0f);
+		m_editor->drawer()->context()->box(model, m_resourceManager->findMaterial("default"));
+		model = glm::translate(model, Vector3(0, 2, 0));
+		m_editor->drawer()->context()->box(model, m_resourceManager->findMaterial("default"));
+		model = glm::translate(model, Vector3(0, 2, 0));
+		m_editor->drawer()->context()->box(model, m_resourceManager->findMaterial("default"));
 
 		while (isRunning())
 		{

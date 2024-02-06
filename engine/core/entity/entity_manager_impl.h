@@ -24,7 +24,7 @@ namespace engine
 		EntityID createEntity();
 		void destroyEntity(EntityID entity);
 
-		std::shared_ptr<ComponentRegistrar> getRegistrar();
+		std::shared_ptr<ComponentRegistrar> registrar();
 
 	private:
 		std::unordered_map<std::size_t, PersistentVector<EntityID, constants::COMPONENT_OWNERS_PER_PAGE>> m_componentOwners;
@@ -33,7 +33,7 @@ namespace engine
 		{
 			// TODO: provide an opportunity to (dynamically?) extend the capacity of the bitset
 			// Extension (copying from a narrower one and pasting into a wider one) must be performed via the bitset stream operators << and >>
-			// Also, user must be informed about that extension and made required to accept it - otherwise further creation of components must be forbidden
+			// Also, user must be informed about that extension and required to accept it - otherwise further creation of components must be forbidden
 			std::bitset<256> components;
 		};
 		PersistentVector<EntityWrapper, constants::COMPONENT_OWNERS_PER_PAGE> m_entities;

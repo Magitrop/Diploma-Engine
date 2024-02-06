@@ -17,7 +17,6 @@ namespace engine
 		std::size_t id() const;
 		operator std::size_t() const;
 
-
 		bool isValid() const;
 
 	private:

@@ -47,5 +47,8 @@ namespace engine
 		virtual void setMatrix2x2(const std::string& name, const Matrix2x2& mat) {};
 		virtual void setMatrix3x3(const std::string& name, const Matrix3x3& mat) {};
 		virtual void setMatrix4x4(const std::string& name, const Matrix4x4& mat) {};
+
+		// Returns the render 'importance' of this material.
+		virtual std::int8_t renderQueue() const { return 0; };
 	};
 } // namespace engine

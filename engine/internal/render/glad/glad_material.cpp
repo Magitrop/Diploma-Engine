@@ -50,8 +50,21 @@ namespace engine
 		m_impl->setMatrix4x4(name, value);
 	}
 
-	GladMaterialImpl::GladMaterialImpl(GladShader* shader /* = nullptr */)
+	std::int8_t GladMaterialAccessor::renderQueue() const
+	{
+		return m_impl->renderQueue();
+	}
+
+	GladMaterialImpl::GladMaterialImpl(GladShader* shader, std::int8_t renderQueue)
 		: m_shader(shader)
+		, m_renderQueue(renderQueue)
+	{
+		DEBUG_ASSERT(m_shader != nullptr);
+	}
+
+	GladMaterialImpl::GladMaterialImpl()
+		: m_shader(nullptr)
+		, m_renderQueue(0)
 	{}
 
 	void GladMaterialImpl::setBool(const std::string& name, bool value)

@@ -144,7 +144,7 @@ namespace engine
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Initializing resource manager...");
-		// TODO: consider the implicit acquiring of GladResourceManager
+		// TODO: abstract graphic API
 		m_resourceManager = std::shared_ptr<ResourceManager>(new GladResourceManager());
 		return m_resourceManager != nullptr;
 	}

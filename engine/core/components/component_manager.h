@@ -25,8 +25,8 @@ namespace engine
 		virtual void onComponentDetached(EntityID entity, ComponentID component) {}
 
 	public:
-		static std::string getComponentName();
-		static std::size_t getUniqueComponentID();
+		std::string getComponentName();
+		std::size_t getUniqueComponentID();
 
 	private:
 		class Internal;

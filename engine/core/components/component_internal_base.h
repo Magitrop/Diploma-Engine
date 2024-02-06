@@ -17,16 +17,5 @@ namespace engine
 	protected:
 		virtual void attachComponent(ComponentID component) = 0;
 		virtual void detachComponent(ComponentID component) = 0;
-
-		void setComponentName(std::string name);
-		void setUniqueComponentID(std::size_t id);
-
-	public:
-		std::string getComponentName() const;
-		std::size_t getUniqueComponentID() const;
-
-	private:
-		std::string m_componentName;
-		std::size_t m_uniqueComponentID;
 	};
 } // namespace engine

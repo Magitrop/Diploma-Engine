@@ -66,15 +66,17 @@ namespace engine
 			bool operator == (const Iterator& other) const;
 			Iterator& operator ++();
 			Iterator& operator +(std::size_t diff);
-			[[nodiscard]] std::size_t getIndex() const; // Returns an absolute index of the value. Does not take empty slots into account.
+			const Iterator& operator ++() const;
+			const Iterator& operator +(std::size_t diff) const;
+			[[nodiscard]] std::size_t getIndex() const; // Returns an absolute index of the value. Takes empty slots into account.
 
 		private:
 			Pages::const_iterator page() const;
 			PageCapacityType index() const;
 
-			Pages::const_iterator m_end;
-			Pages::const_iterator m_page;
-			PageCapacityType m_index;
+			mutable Pages::const_iterator m_end;
+			mutable Pages::const_iterator m_page;
+			mutable PageCapacityType m_index;
 		};
 
 	public:
@@ -413,6 +415,45 @@ namespace engine
 
 	template<typename Type, PageCapacityType PageCapacity>
 	typename PersistentVector<Type, PageCapacity>::Iterator& PersistentVector<Type, PageCapacity>::Iterator::operator +(std::size_t diff)
+	{
+		for (std::size_t i = 0; i < diff; ++i)
+		{
+			if (m_page == m_end)
+				break;
+
+			++m_index;
+			if (m_index >= PageCapacity)
+			{
+				m_index = 0;
+				std::advance(m_page, 1);
+			}
+		}
+		return *this;
+	}
+
+	template<typename Type, PageCapacityType PageCapacity>
+	const typename PersistentVector<Type, PageCapacity>::Iterator& PersistentVector<Type, PageCapacity>::Iterator::operator ++ () const
+	{
+		if (m_page == m_end)
+			return *this;
+
+		do
+		{
+			++m_index;
+			if (m_index >= PageCapacity)
+			{
+				m_index = 0;
+				std::advance(m_page, 1);
+			}
+
+			if (m_page == m_end)
+				break;
+		} while ((*m_page)->slots[m_index].empty());
+		return *this;
+	}
+
+	template<typename Type, PageCapacityType PageCapacity>
+	const typename PersistentVector<Type, PageCapacity>::Iterator& PersistentVector<Type, PageCapacity>::Iterator::operator + (std::size_t diff) const
 	{
 		for (std::size_t i = 0; i < diff; ++i)
 		{

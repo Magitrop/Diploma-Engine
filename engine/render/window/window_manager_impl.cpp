@@ -1,7 +1,11 @@
 #include "window_manager_impl.h"
 
 #include <engine/core/input/input_system_accessor.h>
+
 #include <engine/debug/memory/memory_guard.h>
+
+#include <engine/internal/helpers/assert.h>
+
 #include <engine/dependencies/glfw/include/GLFW/glfw3.h>
 
 namespace engine

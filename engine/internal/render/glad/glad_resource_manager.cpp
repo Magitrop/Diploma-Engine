@@ -128,7 +128,7 @@ in VS_OUT
 
 void main() 
 {
-	color = vec4(0, 0, 1, 1); 
+	color = vec4(fs_in.FragPos, 1); 
 }
 )");
 
@@ -227,6 +227,45 @@ void main()
     outColor.a *= fading;
 }
 )");
+
+		registerShader("selection",
+			R"(
+#version 460
+layout (location = 0) in vec3 vertexPosition;
+
+out VS_OUT 
+{
+	vec3 FragPos;
+	vec4 Color;
+} vs_out;
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+uniform vec4 selectionColor;
+
+void main()
+{
+	vs_out.FragPos = vec3(model * vec4(vertexPosition, 1.0));
+	vs_out.Color = selectionColor;
+	gl_Position = projection * view * model * vec4(vertexPosition, 1.0);
+}
+
+)",
+R"(
+#version 460
+out vec4 color;
+in VS_OUT 
+{
+	vec3 FragPos;
+	vec4 Color;
+} fs_in;
+
+void main() 
+{
+	color = fs_in.Color; 
+}
+)");
 	}
 
 	void GladResourceManager::registerBuiltinMaterials()
@@ -237,9 +276,12 @@ void main()
 		{
 			auto& [name, shader] = it->get();
 			if (name == "default")
-				m_defaultMaterial = registerMaterial("default", ShaderID(it.getIndex()));
+				m_defaultMaterial = registerMaterial("default", ShaderID(it.getIndex()), 0);
 			else if (name == "editor_grid")
-				registerMaterial("editor_grid", ShaderID(it.getIndex()));
+				registerMaterial(
+					"editor_grid",
+					ShaderID(it.getIndex()),
+					std::numeric_limits<std::int8_t >::min());
 		}
 	}
 
@@ -259,13 +301,15 @@ void main()
 		return nullptr;
 	}
 
-	GladMaterialImpl* GladResourceManager::registerMaterial(std::string materialName, ShaderID shader)
+	GladMaterialImpl* GladResourceManager::registerMaterial(std::string materialName,
+															ShaderID shader,
+															std::int8_t renderQueue)
 	{
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Registering material \"{}\"...", materialName);
 
 		GladShader* shaderPtr = &m_shaders.at(shader)->get().shader;
-		return &m_materials.push({ materialName, GladMaterialImpl(shaderPtr) })->get().material;
+		return &m_materials.push({ materialName, GladMaterialImpl(shaderPtr, renderQueue) })->get().material;
 	}
 } // namespace engine

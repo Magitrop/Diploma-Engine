@@ -28,11 +28,6 @@ namespace engine
 		friend class EntityManager;
 		friend class ComponentRegistrar;
 
-		// members
-	public:
-		std::string getComponentName() const;
-		std::size_t getUniqueComponentID() const;
-
 	protected:
 		std::shared_ptr<ComponentInternal> m_internal;
 	};

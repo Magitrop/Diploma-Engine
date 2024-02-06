@@ -7,13 +7,15 @@
 
 namespace engine
 {
-	class EditorDrawer;
+	class IEditorDrawer;
 	class EditorViewportsManager;
 	class EditorViewportWindow;
+	class EditorSelectionManager;
 	class EntityManager;
 	class EntitySelection;
 	class InputSystem;
 	class IRenderPipeline;
+	class GizmoManager;
 	class ResourceManager;
 	class WindowManager;
 	class Editor final
@@ -36,7 +38,7 @@ namespace engine
 
 		std::shared_ptr<EntitySelection> entitySelection();
 		std::shared_ptr<EditorViewportsManager> viewportsManager();
-		std::shared_ptr<EditorDrawer> drawer();
+		std::shared_ptr<IEditorDrawer> drawer();
 
 	private:
 		void drawEditorUI();
@@ -51,18 +53,22 @@ namespace engine
 
 		[[nodiscard]] bool initializeImGui();
 		[[nodiscard]] bool initializeViewports();
-		[[nodiscard]] bool initializeSelectionManager();
+		[[nodiscard]] bool initializeSelectionManagers();
 		[[nodiscard]] bool initializeDrawer();
+		[[nodiscard]] bool initializeGizmoManager();
 
 		WindowID m_editorWindow;
+
 		std::shared_ptr<EditorViewportsManager> m_editorViewports;
 		std::shared_ptr<WindowManager> m_windowManager;
 		std::shared_ptr<InputSystem> m_inputSystem;
 		std::shared_ptr<IRenderPipeline> m_renderPipeline;
 		std::shared_ptr<EntityManager> m_entityManager;
 		std::shared_ptr<EntitySelection> m_entitySelection;
-		std::shared_ptr<EditorDrawer> m_editorDrawer;
+		std::shared_ptr<EditorSelectionManager> m_editorSelection;
+		std::shared_ptr<IEditorDrawer> m_editorDrawer;
 		std::shared_ptr<ResourceManager> m_resourceManager;
+		std::shared_ptr<GizmoManager> m_gizmoManager;
 
 		float m_editorCameraMovementSpeed;
 		Vector2 m_editorCameraSensitivity;

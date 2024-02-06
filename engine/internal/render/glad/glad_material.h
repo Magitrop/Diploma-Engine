@@ -24,19 +24,19 @@ namespace engine
 		virtual void setMatrix3x3(const std::string& name, const Matrix3x3& value) override;
 		virtual void setMatrix4x4(const std::string& name, const Matrix4x4& value) override;
 
+		virtual std::int8_t renderQueue() const override;
+
 	private:
 		GladMaterialImpl* m_impl;
 	};
 
 	class GladMaterialImpl final
 	{
-		// friends
-	private:
-		friend class GladRenderPipeline;
-
 		// members
 	public:
-		GladMaterialImpl(GladShader* shader = nullptr);
+		GladMaterialImpl(GladShader* shader, std::int8_t renderQueue);
+		// Creates an invalid material implementation.
+		GladMaterialImpl();
 
 		void setBool(const std::string& name, bool value);
 		void setInt(const std::string& name, GLint value);
@@ -50,7 +50,11 @@ namespace engine
 
 		void useShader() const;
 
+		std::int8_t renderQueue() const { return m_renderQueue; }
+		const GladShader* shader() const { return m_shader; }
+
 	private:
 		GladShader* m_shader;
+		std::int8_t m_renderQueue;
 	};
 } // namespace engine
