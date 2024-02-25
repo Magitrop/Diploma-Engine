@@ -17,12 +17,12 @@ namespace engine
         glGenTextures(1, &m_depthTexture);
 
         glBindTexture(GL_TEXTURE_2D, m_opaqueTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_SHORT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         glBindTexture(GL_TEXTURE_2D, m_depthTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -70,10 +70,10 @@ namespace engine
         m_height = y;
 
         glBindTexture(GL_TEXTURE_2D, m_opaqueTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
 
         glBindTexture(GL_TEXTURE_2D, m_depthTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -95,8 +95,8 @@ namespace engine
         ScopedFramebuffer scopedFramebuffer = useFramebuffer();
 
         PixelInfo info{};
-        glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_SHORT, &info.color);
-        glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, &info.depth);
+        glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &info.color);
+        glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &info.depth);
         return info;
     }
 } // namespace engine

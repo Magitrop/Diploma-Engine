@@ -43,9 +43,6 @@ namespace engine
 		bool isHovered() const;
 		bool isFocused() const;
 
-		// Makes this ImGui viewport window focused.
-		void focus();
-
 		WindowFramebuffers& framebuffers() { return m_windowFramebuffers; }
 		const WindowFramebuffers& framebuffers() const { return m_windowFramebuffers; }
 
@@ -59,14 +56,17 @@ namespace engine
 			Vector2 bottomRight;
 		};
 		// Returns the ImGui window properties.
-		WindowProperties& properties();
-		const WindowProperties& properties() const;
+		WindowProperties& properties() { return m_imguiWindowProperties; }
+		const WindowProperties& properties() const { return m_imguiWindowProperties; }
 
 		// Maps global screen coordinates to local window coordinates.
 		// Note: content local coordinates exclude ImGui window margins and titlebar.
 		Vector2 screenToContent(Vector2 screenCoord) const;
 
 	private:
+		// Makes this ImGui viewport window focused.
+		void focus();
+
 		void draw();
 		void handleCameraInput(Vector2 mouseMotion, Vector3 movementInput,
 							   float movementSpeed, Vector2 sensitivity);

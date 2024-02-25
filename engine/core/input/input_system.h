@@ -9,6 +9,7 @@
 struct GLFWwindow;
 namespace engine
 {
+	class TimeManager;
 	class InputSystem final
 	{
 		// friends
@@ -17,19 +18,11 @@ namespace engine
 
 		// members
 	public:
-		enum KeyModifiers : std::uint8_t
-		{
-			None = 0,
-			Shift = 1 << 0,
-			Ctrl = 1 << 1,
-			Alt = 1 << 2
-		};
-
-		explicit InputSystem();
+		explicit InputSystem(std::shared_ptr<TimeManager> timeManager);
 
 		// Returns the current position of the cursor in pixels.
 		Vector2 mousePosition() const;
-		// Returns the difference between the last and current cursor positions.
+		// Returns the difference between the last and current cursor positions in pixels.
 		Vector2 mouseMotion() const;
 		// Returns the offset of the last mouse wheel scrolling.
 		float mouseWheel() const;
@@ -40,6 +33,8 @@ namespace engine
 		bool onMouseButtonDown(MouseButton button) const;
 		// Returns true if the given mouse button was released during this frame.
 		bool onMouseButtonUp(MouseButton button) const;
+		// Returns true if the given mouse button was clicked.
+		bool onMouseClick(MouseButton button) const;
 
 		// Returns whether the given key is held down.
 		bool isKeyPressed(KeyCode keyCode) const;

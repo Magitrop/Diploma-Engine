@@ -60,6 +60,17 @@ namespace engine
 		return nullptr;
 	}
 
+	GladMaterialImpl* GladResourceManager::getMaterial(std::string name)
+	{
+		for (auto it = m_materials.begin(); it != m_materials.end(); ++it)
+		{
+			auto& entry = it->get();
+			if (entry.name == name)
+				return &it->get().material;
+		}
+		return nullptr;
+	}
+
 	GladMeshImpl* GladResourceManager::getMeshImpl(MeshID id)
 	{
 		auto it = m_meshes.at(id);
@@ -228,6 +239,41 @@ void main()
 }
 )");
 
+		registerShader("editor_line",
+			R"(
+#version 460
+layout (location = 0) in vec3 vertexPosition;
+
+out VS_OUT 
+{
+	vec4 color;
+} vs_out;
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform vec4 color;
+
+void main()
+{
+	gl_Position = projection * view * vec4(vertexPosition, 1.0);
+	vs_out.color = vec4(1, 1, 1, 1);// color;
+}
+
+)",
+R"(
+#version 460
+out vec4 color;
+in VS_OUT 
+{
+	vec4 color;
+} fs_in;
+
+void main() 
+{
+	color = fs_in.color;
+}
+)");
+
 		registerShader("selection",
 			R"(
 #version 460
@@ -266,6 +312,42 @@ void main()
 	color = fs_in.Color; 
 }
 )");
+
+		registerShader("gizmo",
+			R"(
+#version 460
+layout (location = 0) in vec3 vertexPosition;
+
+out VS_OUT 
+{
+	vec4 Color;
+} vs_out;
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+uniform vec4 axis; // must be either X, Y or Z
+
+void main()
+{
+	vs_out.Color = axis;
+	gl_Position = projection * view * model * vec4(vertexPosition, 1.0);
+}
+
+)",
+R"(
+#version 460
+out vec4 color;
+in VS_OUT 
+{
+	vec4 Color;
+} fs_in;
+
+void main() 
+{
+	color = fs_in.Color; 
+}
+)");
 	}
 
 	void GladResourceManager::registerBuiltinMaterials()
@@ -275,13 +357,32 @@ void main()
 		for (auto it = m_shaders.begin(); it != m_shaders.end(); ++it)
 		{
 			auto& [name, shader] = it->get();
+			ShaderID id = ShaderID(it.getIndex());
 			if (name == "default")
-				m_defaultMaterial = registerMaterial("default", ShaderID(it.getIndex()), 0);
+			{
+				m_defaultMaterial = registerMaterial("default", id, 0);
+			}
 			else if (name == "editor_grid")
+			{
 				registerMaterial(
-					"editor_grid",
-					ShaderID(it.getIndex()),
-					std::numeric_limits<std::int8_t >::min());
+					"editor_grid", id,
+					std::numeric_limits<std::int8_t>::min());
+			}
+			else if (name == "selection")
+			{
+				registerMaterial("selection", id, 0);
+			}
+			else if (name == "gizmo")
+			{
+				registerMaterial(
+					"gizmo", id,
+					std::numeric_limits<std::int8_t>::max());
+			}
+			else if (name == "editor_line")
+			{
+				registerMaterial(
+					"editor_line", id, 1);
+			}
 		}
 	}
 

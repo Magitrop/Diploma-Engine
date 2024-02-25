@@ -36,7 +36,6 @@ namespace engine
 			bool m_empty;
 		};
 
-		using This = PersistentVector<Type>;
 		struct Page
 		{
 			std::array<Slot, PageCapacity> slots;
@@ -45,6 +44,8 @@ namespace engine
 		using Pages = std::list<std::shared_ptr<Page>>;
 
 	public:
+		using ValueType = Type;
+
 		class Iterator final
 		{
 		private:

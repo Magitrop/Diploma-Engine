@@ -12,7 +12,9 @@
 
 namespace engine
 {
+	class EntityManager;
 	class ResourceManager;
+	class Transform;
 	class GladMeshRenderer final : public MeshRenderer
 	{
 		// friends
@@ -23,12 +25,16 @@ namespace engine
 
 		// members
 	public:
-		explicit GladMeshRenderer(std::shared_ptr<ResourceManager> resourceManager);
+		explicit GladMeshRenderer(std::shared_ptr<ResourceManager> resourceManager,
+								  std::shared_ptr<EntityManager> entityManager);
 		virtual ~GladMeshRenderer() override {};
 
 		virtual void setMaterial(ComponentID componentID, MaterialID materialID) override;
 		virtual void setMesh(ComponentID componentID, MeshID meshID) override;
 
 		void updateMeshesWithID(MeshID id);
+
+	private:
+		void drawMeshes(const Matrix4x4& projection, const Matrix4x4& view, bool selectionFramebuffer);
 	};
 } // namespace engine

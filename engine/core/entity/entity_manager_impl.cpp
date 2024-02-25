@@ -36,10 +36,10 @@ namespace engine
 		ComponentID componentID = ComponentID(componentOwners.push(entity).getIndex());
 		entityComponents[uniqueComponentID] = 1;
 
-		std::shared_ptr<ComponentManager> manager = getComponentManager(uniqueComponentID);
-		if (auto builtin = std::dynamic_pointer_cast<BuiltinComponent>(manager))
+		ComponentManager* manager = getComponentManager(uniqueComponentID);
+		if (auto builtin = dynamic_cast<BuiltinComponent*>(manager))
 		{
-			builtin->m_internal->attachComponent(componentID);
+			builtin->m_internal->attachComponent(entity, componentID);
 		}
 		manager->onComponentAttached(entity, componentID);
 
@@ -70,9 +70,9 @@ namespace engine
 
 		ComponentID componentID = ComponentID(owner.getIndex());
 		getComponentManager(uniqueComponentID)->onComponentDetached(entity, componentID);
-		if (auto manager = std::dynamic_pointer_cast<BuiltinComponent>(getComponentManager(uniqueComponentID)))
+		if (auto manager = dynamic_cast<BuiltinComponent*>(getComponentManager(uniqueComponentID)))
 		{
-			manager->m_internal->detachComponent(componentID);
+			manager->m_internal->detachComponent(entity, componentID);
 		}
 
 		componentOwners.remove(owner);
@@ -115,7 +115,12 @@ namespace engine
 		return m_entities.at(entity)->get().components[uniqueComponentID];
 	}
 
-	std::shared_ptr<ComponentManager> EntityManager::Internal::getComponentManager(std::size_t uniqueComponentID)
+	ComponentManager* EntityManager::Internal::getComponentManager(std::size_t uniqueComponentID)
+	{
+		return m_componentRegistrar->getComponentManager(uniqueComponentID);
+	}
+
+	const ComponentManager* EntityManager::Internal::getComponentManager(std::size_t uniqueComponentID) const
 	{
 		return m_componentRegistrar->getComponentManager(uniqueComponentID);
 	}
@@ -124,7 +129,11 @@ namespace engine
 	{
 		MEMORY_GUARD;
 
-		EntityID entity = EntityID(m_entities.push(EntityWrapper()).getIndex());
+		EntityID entity = EntityID(m_entities.getNextEmptyIndex());
+
+		m_entityName.push("New Entity");
+		m_entities.push(EntityWrapper());
+
 		attachComponent(entity, registrar()->getComponentIDByName(getBuiltinComponentName<Transform>()));
 		return entity;
 	}
@@ -140,6 +149,7 @@ namespace engine
 				owners.remove(it);
 		}
 		m_entities.remove(m_entities.at(entity));
+		m_entityName.remove(m_entityName.at(entity));
 	}
 
 	std::shared_ptr<ComponentRegistrar> EntityManager::Internal::registrar()

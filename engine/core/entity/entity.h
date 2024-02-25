@@ -1,6 +1,7 @@
 #pragma once
 
-#include <cstddef>
+#include <cstdint>
+#include <type_traits>
 
 namespace engine
 {
@@ -9,17 +10,30 @@ namespace engine
 	class EntityID final
 	{
 	public:
-		explicit EntityID(std::size_t index);
+		explicit constexpr EntityID(std::uint32_t id)
+			: m_id(id)
+		{}
 
 		// Creates an invalid EntityID.
-		explicit EntityID();
+		explicit constexpr EntityID()
+			: m_id(static_cast<std::uint32_t>(-1))
+		{}
 
-		std::size_t id() const;
-		operator std::size_t() const;
+		std::uint32_t id() const { return m_id; }
+		operator std::uint32_t() const { return m_id; }
 
 		bool isValid() const;
 
 	private:
-		std::size_t m_id;
+		std::uint32_t m_id;
 	};
 } // namespace engine
+
+template <>
+struct std::hash<engine::EntityID>
+{
+	std::size_t operator()(const engine::EntityID& key) const
+	{
+		return key;
+	}
+};

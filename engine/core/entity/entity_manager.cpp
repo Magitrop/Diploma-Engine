@@ -38,7 +38,13 @@ namespace engine
 		return m_internal->getComponent(entity, uniqueID);
 	}
 
-	std::shared_ptr<ComponentManager> EntityManager::getComponentManagerInternal(std::string componentName)
+	ComponentManager* EntityManager::getComponentManagerInternal(std::string componentName)
+	{
+		std::size_t uniqueID = m_internal->registrar()->getComponentIDByName(componentName);
+		return m_internal->getComponentManager(uniqueID);
+	}
+
+	const ComponentManager* EntityManager::getComponentManagerInternal(std::string componentName) const
 	{
 		std::size_t uniqueID = m_internal->registrar()->getComponentIDByName(componentName);
 		return m_internal->getComponentManager(uniqueID);

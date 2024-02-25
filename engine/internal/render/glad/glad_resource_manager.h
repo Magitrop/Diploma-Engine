@@ -38,6 +38,7 @@ namespace engine
 		virtual std::shared_ptr<MeshAccessor> getMeshByID(MeshID id) override;
 
 		GladMaterialImpl* getMaterial(MaterialID id);
+		GladMaterialImpl* getMaterial(std::string name);
 		GladMeshImpl* getMeshImpl(MeshID id);
 
 		const GladMaterialImpl* getDefaultMaterial();

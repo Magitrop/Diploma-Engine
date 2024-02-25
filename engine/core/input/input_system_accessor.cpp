@@ -13,8 +13,8 @@ namespace engine
 		m_inputSystem->m_internal->connectCallbacksToWindow(window);
 	}
 
-	void InputSystemAccessor::onFrameBegin()
+	void InputSystemAccessor::onFrameEnd()
 	{
-		m_inputSystem->m_internal->onFrameBegin();
+		m_inputSystem->m_internal->onFrameEnd();
 	}
 } // namespace engine

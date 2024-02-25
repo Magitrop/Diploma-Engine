@@ -7,13 +7,6 @@
 
 namespace engine
 {
-	struct TransformRef final
-	{
-		Vector3& position;
-		Quaternion& rotation;
-		Vector3& scale;
-	};
-
 	class Transform final : public BuiltinComponent
 	{
 	public:
@@ -21,8 +14,21 @@ namespace engine
 		virtual ~Transform() override;
 
 	public:
-		//TransformRef getTransform(ComponentID id);
-		Matrix4x4& modelMatrix(ComponentID id);
+		Matrix4x4 modelMatrix(ComponentID id) const;
+		Vector3 localPosition(ComponentID id) const;
+		Quaternion localRotation(ComponentID id) const;
+		Vector3 localScale(ComponentID id) const;
+
+		Vector3 forward(ComponentID id) const;
+		Vector3 up(ComponentID id) const;
+		Vector3 right(ComponentID id) const;
+
+		/*ComponentID parent(ComponentID id) const;
+		void setParent(ComponentID child, ComponentID parent);*/
+
+		void translateLocalBy(ComponentID id, Vector3 value);
+		void rotateBy(ComponentID id, Quaternion value);
+		void scaleBy(ComponentID id, Vector3 value);
 	};
 	DEFINE_COMPONENT(Transform)
 } // namespace engine

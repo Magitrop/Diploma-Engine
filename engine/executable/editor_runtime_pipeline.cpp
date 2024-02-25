@@ -7,6 +7,7 @@
 
 #include <engine/core/components/component_manager.h>
 #include <engine/core/components/component_registrar.h>
+#include <engine/core/components/transform_component.h>
 #include <engine/core/entity/entity_manager.h>
 #include <engine/core/input/input_system_accessor.h>
 #include <engine/core/input/input_system_impl.h>
@@ -50,11 +51,11 @@ namespace engine
 		INFO_LOG("Initialization started.");
 
 		executor(&EditorRuntimePipeline::initializeGLFW);
+		executor(&EditorRuntimePipeline::initializeTimeManager);
 		executor(&EditorRuntimePipeline::initializeInputSystem);
 		executor(&EditorRuntimePipeline::initializeWindowManager);
 		executor(&EditorRuntimePipeline::createEditorWindow);
 		executor(&EditorRuntimePipeline::initializeGraphicAPI);
-		executor(&EditorRuntimePipeline::initializeTimeManager);
 		executor(&EditorRuntimePipeline::initializeComponentRegistrar);
 		executor(&EditorRuntimePipeline::initializeEntityManager);
 		executor(&EditorRuntimePipeline::initializeResourceManager);
@@ -87,45 +88,56 @@ namespace engine
 
 		INFO_LOG("Runtime started.");
 
-		auto renderer = m_entityManager->getComponentManager<MeshRenderer>();
-		auto entity = m_entityManager->createEntity();
-		auto rendererID = m_entityManager->attachComponent<MeshRenderer>(entity);
 		auto materialID = m_resourceManager->findMaterial("default");
+		auto renderManager = m_entityManager->getComponentManager<MeshRenderer>();
+		auto transformManager = m_entityManager->getComponentManager<Transform>();
+
+		auto entity1 = m_entityManager->createEntity();
+		auto entity2 = m_entityManager->createEntity();
+		auto entity3 = m_entityManager->createEntity();
+
+		auto rendererID1 = m_entityManager->attachComponent<MeshRenderer>(entity1);
+		auto rendererID2 = m_entityManager->attachComponent<MeshRenderer>(entity2);
+		auto rendererID3 = m_entityManager->attachComponent<MeshRenderer>(entity3);
+
+		auto transformID1 = m_entityManager->getComponent<Transform>(entity1);
+		auto transformID2 = m_entityManager->getComponent<Transform>(entity2);
+		auto transformID3 = m_entityManager->getComponent<Transform>(entity3);
 		
 		auto meshID = m_resourceManager->createMesh();
 		std::vector<Vertex> v2
 		{
-			Vertex(Vector3(0, 0, 3)),
-			Vertex(Vector3(1, 1, 3)),
-			Vertex(Vector3(1, 0, 3))
+			Vertex(Vector3(0, 0, 0)),
+			Vertex(Vector3(0, 1, 0)),
+			Vertex(Vector3(0, 0, 1))
 		};
 		std::vector<std::uint32_t> i2;
 		for (int i = 0; i < 3; ++i)
 			i2.emplace_back(i);
 		m_resourceManager->getMeshByID(meshID)->setVertices(std::move(v2), std::move(i2));
 
-		renderer->setMaterial(rendererID, materialID);
-		renderer->setMesh(rendererID, meshID);
+		renderManager->setMaterial(rendererID1, materialID);
+		renderManager->setMesh(rendererID1, meshID);
+
+		renderManager->setMaterial(rendererID2, materialID);
+		renderManager->setMesh(rendererID2, meshID);
+
+		renderManager->setMaterial(rendererID3, materialID);
+		renderManager->setMesh(rendererID3, meshID);
+
+		transformManager->translateLocalBy(transformID1, Vector3(1, 0, 0));
+		transformManager->translateLocalBy(transformID2, Vector3(2, 0, 0));
+		//transformManager->setParent(transformID1, transformID2);
+		//transformManager->setParent(transformID2, transformID3);
 
 		m_isRunning = true;
-		float x = 0;
-
-		m_editor->entitySelection()->select(entity);
-
-		Matrix4x4 model = Matrix4x4(1.0f);
-		m_editor->drawer()->context()->box(model, m_resourceManager->findMaterial("default"));
-		model = glm::translate(model, Vector3(0, 2, 0));
-		m_editor->drawer()->context()->box(model, m_resourceManager->findMaterial("default"));
-		model = glm::translate(model, Vector3(0, 2, 0));
-		m_editor->drawer()->context()->box(model, m_resourceManager->findMaterial("default"));
-
 		while (isRunning())
 		{
 			ScopedTime timer = startDeltaTimer();
 
 			m_editor->tick();
 
-			m_inputSystemAccessor->onFrameBegin();
+			m_inputSystemAccessor->onFrameEnd();
 			glfwPollEvents();
 			m_windowManager->m_internal->swapBuffers(m_editor->getEditorWindow());
 		}
@@ -136,7 +148,7 @@ namespace engine
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Creating editor window...");
-		m_editorWindow = m_windowManager->createWindow(400, 400, "Editor");
+		m_editorWindow = m_windowManager->createWindow(1000, 800, "Editor");
 		if (!m_editorWindow.isValid())
 		{
 			FATAL_LOG("Failed to create Editor window.");
@@ -159,14 +171,14 @@ namespace engine
 		DEBUG_ASSERT(m_renderPipeline != nullptr);
 		DEBUG_ASSERT(m_inputSystem != nullptr);
 		DEBUG_ASSERT(m_entityManager != nullptr);
-		m_editor = std::make_shared<Editor>(
+		m_editor = std::shared_ptr<Editor>(new Editor(
 			m_editorWindow,
 			m_windowManager,
 			m_renderPipeline,
-			m_inputSystem,
-			m_entityManager,
+			m_inputSystemAccessor,
+			m_entityManagerAccessor.get(),
 			m_resourceManager
-		);
+		));
 
 		result &= initializeImGui();
 		result &= m_editor->initialize();

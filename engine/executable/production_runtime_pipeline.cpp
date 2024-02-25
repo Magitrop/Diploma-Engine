@@ -11,7 +11,7 @@
 #include <engine/core/components/component_registrar.h>
 #include <engine/core/components/renderer_component.h>
 #include <engine/core/components/transform_component.h>
-#include <engine/core/entity/entity_manager.h>
+#include <engine/core/entity/entity_manager_accessor.h>
 #include <engine/core/input/input_system_impl.h>
 #include <engine/core/input/input_system_accessor.h>
 #include <engine/core/resources/resource_registrar.h>
@@ -86,7 +86,9 @@ namespace engine
 		MEMORY_GUARD;
 
 		DEBUG_LOG("Initializing input system...");
-		m_inputSystem = std::shared_ptr<InputSystem>(new InputSystem());
+
+		DEBUG_ASSERT(m_timeManager != nullptr);
+		m_inputSystem = std::shared_ptr<InputSystem>(new InputSystem(m_timeManager));
 		m_inputSystemAccessor = std::shared_ptr<InputSystemAccessor>(new InputSystemAccessor(m_inputSystem));
 		return m_inputSystem != nullptr && m_inputSystemAccessor != nullptr;
 	}
@@ -136,6 +138,7 @@ namespace engine
 
 		DEBUG_ASSERT(m_componentRegistrar != nullptr);
 		m_entityManager = std::shared_ptr<EntityManager>(new EntityManager(m_componentRegistrar));
+		m_entityManagerAccessor = std::shared_ptr<EntityManagerAccessor>(new EntityManagerAccessor(m_entityManager.get()));
 		return m_entityManager != nullptr;
 	}
 
@@ -157,9 +160,17 @@ namespace engine
 
 		DEBUG_ASSERT(m_resourceManager != nullptr);
 		// TODO: remake with a proper macro (see serialization_helper.h)
-		m_componentRegistrar->registerComponent<Transform>(std::shared_ptr<Transform>(new Transform()), "Transform");
+		m_componentRegistrar->registerComponent<Transform>(
+			new Transform(),
+			"Transform");
 		// TODO: abstract graphic API
-		m_componentRegistrar->registerComponent<MeshRenderer>(std::shared_ptr<GladMeshRenderer>(new GladMeshRenderer(m_resourceManager)), "MeshRenderer");
+		m_componentRegistrar->registerComponent<MeshRenderer>(
+			new GladMeshRenderer(
+				m_resourceManager,
+				m_entityManager
+			),
+			"MeshRenderer"
+		);
 
 		return true;
 	}

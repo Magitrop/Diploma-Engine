@@ -4,6 +4,14 @@
 
 namespace engine
 {
+	enum class KeyModifiers : std::uint8_t
+	{
+		None = 0,
+		Shift = 1 << 0,
+		Ctrl = 1 << 1,
+		Alt = 1 << 2
+	};
+
 	enum class KeyCode : std::uint16_t
 	{
 		Unknown			= static_cast<std::uint16_t>(-1),

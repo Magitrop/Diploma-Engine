@@ -1,12 +1,16 @@
 #include "input_system_impl.h"
 
+#include <engine/core/time/time_manager.h>
 #include <engine/debug/logging/debug_logger.h>
+#include <engine/internal/helpers/assert.h>
 
 namespace engine
 {
 	InputSystem::Internal* InputSystem::Internal::EventsHandler::internal;
-	InputSystem::Internal::Internal()
+	InputSystem::Internal::Internal(std::shared_ptr<TimeManager> timeManager)
+		: m_timeManager(std::move(timeManager))
 	{
+		DEBUG_ASSERT(m_timeManager != nullptr);
 		EventsHandler::internal = this;
 	}
 
@@ -51,6 +55,12 @@ namespace engine
 		return state.lastFrame && !state.thisFrame;
 	}
 
+	bool InputSystem::Internal::onMouseClick(MouseButton button) const
+	{
+		const auto& state = m_mouse[static_cast<std::uint8_t>(button)];
+		return state.isClicking && state.lastFrame && !state.thisFrame;
+	}
+
 	bool InputSystem::Internal::isKeyPressed(KeyCode keyCode) const
 	{
 		const auto& state = m_keys[static_cast<std::uint16_t>(keyCode)];
@@ -69,17 +79,16 @@ namespace engine
 		return state.lastFrame && !state.thisFrame;
 	}
 
-	InputSystem::KeyModifiers InputSystem::Internal::modifiers() const
-	{
-		return m_modifiers;
-	}
-
-	void InputSystem::Internal::onFrameBegin()
+	void InputSystem::Internal::onFrameEnd()
 	{
 		m_mousePosition.lastFrame = m_mousePosition.thisFrame;
 
 		for (auto& mouse : m_mouse)
+		{
 			mouse.lastFrame = mouse.thisFrame;
+			mouse.timeSinceLastChange += m_timeManager->deltaTime();
+			mouse.isClicking = false;
+		}
 
 		for (auto& key : m_keys)
 			key.lastFrame = key.thisFrame;
@@ -107,9 +116,18 @@ namespace engine
 			return;
 
 		if (action == GLFW_PRESS)
+		{
 			m_mouse[button].thisFrame = true;
+			m_mouse[button].timeSinceLastChange = 0.0f;
+		}
 		else if (action == GLFW_RELEASE)
+		{
 			m_mouse[button].thisFrame = false;
+
+			if (m_mouse[button].timeSinceLastChange < MOUSE_CLICK_MAX_TIME_GAP)
+				m_mouse[button].isClicking = true;
+			m_mouse[button].timeSinceLastChange = 0.0f;
+		}
 	}
 
 	void InputSystem::Internal::handleScroll(GLFWwindow* window, double xoffset, double yoffset)

@@ -12,12 +12,12 @@ namespace engine
 
 	ComponentManager::~ComponentManager() {}
 
-	std::string ComponentManager::getComponentName()
+	std::string ComponentManager::getComponentName() const
 	{
 		return m_internal ? m_internal->getComponentName() : constants::UNREGISTERED_COMPONENT_NAME;
 	}
 
-	std::size_t ComponentManager::getUniqueComponentID()
+	std::size_t ComponentManager::getUniqueComponentID() const
 	{
 		return m_internal ? m_internal->getUniqueComponentID() : constants::UNREGISTERED_UNIQUE_COMPONENT_ID;
 	}

@@ -6,9 +6,15 @@
 
 namespace engine
 {
-	GladMeshRenderer::GladMeshRenderer(std::shared_ptr<ResourceManager> resourceManager)
+	GladMeshRenderer::GladMeshRenderer(std::shared_ptr<ResourceManager> resourceManager,
+									   std::shared_ptr<EntityManager> entityManager)
 	{
-		m_internal = std::shared_ptr<GladMeshRendererInternal>(new GladMeshRendererInternal(resourceManager, this));
+		m_internal = std::shared_ptr<GladMeshRendererInternal>(
+			new GladMeshRendererInternal(
+				std::move(resourceManager),
+				std::move(entityManager),
+				this
+			));
 	}
 
 	void GladMeshRenderer::setMaterial(ComponentID componentID, MaterialID materialID)
@@ -24,5 +30,10 @@ namespace engine
 	void GladMeshRenderer::updateMeshesWithID(MeshID id)
 	{
 		static_cast<GladMeshRendererInternal*>(m_internal.get())->updateMeshesWithID(id);
+	}
+
+	void GladMeshRenderer::drawMeshes(const Matrix4x4& projection, const Matrix4x4& view, bool selectionFramebuffer)
+	{
+		static_cast<GladMeshRendererInternal*>(m_internal.get())->drawMeshes(projection, view, selectionFramebuffer);
 	}
 } // namespace engine

@@ -1,6 +1,4 @@
 #include "editor_viewport_window.h"
-#include "editor_viewport_window.h"
-#include "editor_viewport_window.h"
 
 #include <format>
 
@@ -16,15 +14,10 @@
 #include <engine/dependencies/glm/glm/ext/matrix_transform.hpp>
 #include <engine/dependencies/glm/glm/geometric.hpp>
 #include <engine/dependencies/glm/glm/trigonometric.hpp>
+#include <engine/internal/render/glad/glad_framebuffer.h>
 
 namespace engine
 {
-	constexpr Vector3 DEFAULT_CAMERA_POSITION = Vector3::zero();
-	constexpr Vector3 DEFAULT_CAMERA_ANGLES = Vector3::zero();
-	constexpr Vector3 DEFAULT_CAMERA_FORWARD = Vector3::forward();
-	constexpr float DEFAULT_FOV = 60.0f;
-	constexpr float DEFAULT_NEAR_CLIP_PLANE = 0.1f;
-	constexpr float DEFAULT_FAR_CLIP_PLANE = 100.0f;
 	constexpr std::uint32_t DEFAULT_VIEWPORT_WIDTH = 512;
 	constexpr std::uint32_t DEFAULT_VIEWPORT_HEIGHT = 512;
 
@@ -62,16 +55,6 @@ namespace engine
 	void EditorViewportWindow::focus()
 	{
 		m_wantFocus = true;
-	}
-
-	EditorViewportWindow::WindowProperties& EditorViewportWindow::properties()
-	{
-		return m_imguiWindowProperties;
-	}
-
-	const EditorViewportWindow::WindowProperties& EditorViewportWindow::properties() const
-	{
-		return m_imguiWindowProperties;
 	}
 
 	Vector2 EditorViewportWindow::screenToContent(Vector2 screenCoord) const
@@ -126,6 +109,7 @@ namespace engine
 	void EditorViewportWindow::handleCameraInput(Vector2 mouseMotion, Vector3 movementInput,
 												 float movementSpeed, Vector2 sensitivity)
 	{
+		// TODO: forbid any actions when dragging gizmo
 		float yaw = -mouseMotion.x * sensitivity.x;
 		float pitch = -mouseMotion.y * sensitivity.y;
 		

@@ -9,7 +9,7 @@
 namespace engine
 {
 	class EntityManager;
-	class GladMeshRendererInternal;
+	class GladMeshRenderer;
 	class GladResourceManager;
 	class Renderer;
 	class ResourceManager;
@@ -35,10 +35,6 @@ namespace engine
 		virtual void renderEditorViewports() override;
 		virtual void renderEditorSimulation() override;
 
-		void drawMeshes(const Matrix4x4& projection, const Matrix4x4& view);
-		void drawEditorContext(const Matrix4x4& projection, const Matrix4x4& view);
-		void drawGizmo(const Matrix4x4& projection, const Matrix4x4& view);
-
 	public:
 		virtual std::shared_ptr<IFramebuffer> createFramebuffer(std::uint32_t width,
 																std::uint32_t height) override;
@@ -52,7 +48,7 @@ namespace engine
 	private:
 		std::shared_ptr<EntityManager> m_entityManager;
 		std::shared_ptr<GladResourceManager> m_resourceManager;
-		std::shared_ptr<GladMeshRendererInternal> m_meshRenderer;
+		std::shared_ptr<GladMeshRenderer> m_meshRenderer;
 
 #if IS_EDITOR
 		std::shared_ptr<EditorViewportsManager> m_viewports;

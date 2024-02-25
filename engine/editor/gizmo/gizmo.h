@@ -52,25 +52,20 @@ namespace engine
 	public:
 		// Returns an ID of the attached transform component.
 		ComponentID attachedTo() const;
+		bool isAttached() const;
 
 		GizmoType gizmoType() const;
-		void setGizmoType(GizmoType type);
 
 	private:
 		// Attaches this gizmo to the given entity transform.
-		void attach(ComponentID to, Matrix4x4* newMatrix);
+		void attach(ComponentID to);
 		// Detaches this gizmo from any transform.
 		void detach();
 
-		bool translate(Vector3 vec);
-
-		// Returns whether the gizmo is attached to any entity transform.
-		bool checkAttachment();
+		void setGizmoType(GizmoType type);
 
 	private:
-		GizmoType m_gizmoType;
-
-		Matrix4x4* m_attachedMatrix;
 		ComponentID m_attachedTransform;
+		GizmoType m_gizmoType;
 	};
 } // namespace engine

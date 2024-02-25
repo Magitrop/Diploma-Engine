@@ -12,6 +12,11 @@ namespace engine
 	class ComponentRegistrar;
 	class EntityManager final
 	{
+		// friends
+	private:
+		friend class EntityManagerAccessor;
+
+		// members
 	public:
 		explicit EntityManager(std::shared_ptr<ComponentRegistrar> registrar);
 		~EntityManager();
@@ -20,6 +25,8 @@ namespace engine
 		// Does nothing and retuns an invalid ID if the Entity already possesses a Component of that type.
 		template<typename Component>
 		ComponentID attachComponent(EntityID entity);
+
+		// TODO: attachOrGetComponent;
 
 		// Detaches a Component from an Entity.
 		// Does nothing if the Entity does not possess a Component of that type.
@@ -37,7 +44,10 @@ namespace engine
 		[[nodiscard]] bool hasComponent(EntityID entity);
 
 		template<typename Component>
-		[[nodiscard]] std::shared_ptr<Component> getComponentManager();
+		[[nodiscard]] Component* getComponentManager();
+
+		template<typename Component>
+		[[nodiscard]] const Component* getComponentManager() const;
 
 		[[nodiscard]] EntityID createEntity();
 		void destroyEntity(EntityID entity);
@@ -47,7 +57,8 @@ namespace engine
 		void detachComponentInternal(EntityID entity, std::string componentName);
 		ComponentID getComponentInternal(EntityID entity, std::string componentName);
 		bool hasComponentInternal(EntityID entity, std::string componentName);
-		std::shared_ptr<ComponentManager> getComponentManagerInternal(std::string componentName);
+		ComponentManager* getComponentManagerInternal(std::string componentName);
+		const ComponentManager* getComponentManagerInternal(std::string componentName) const;
 
 		class Internal;
 		std::unique_ptr<Internal> m_internal;
@@ -78,8 +89,14 @@ namespace engine
 	}
 
 	template<typename Component>
-	std::shared_ptr<Component> EntityManager::getComponentManager()
+	Component* EntityManager::getComponentManager()
 	{
-		return std::dynamic_pointer_cast<Component>(getComponentManagerInternal(getBuiltinComponentName<Component>()));
+		return dynamic_cast<Component*>(getComponentManagerInternal(getBuiltinComponentName<Component>()));
+	}
+
+	template<typename Component>
+	const Component* EntityManager::getComponentManager() const
+	{
+		return dynamic_cast<const Component*>(getComponentManagerInternal(getBuiltinComponentName<Component>()));
 	}
 } // namespace engine

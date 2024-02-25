@@ -13,21 +13,23 @@ namespace engine
 		Internal() = default;
 		~Internal() = default;
 
-		std::size_t registerComponent(std::shared_ptr<ComponentManager> manager, std::string componentName);
+		std::size_t registerComponent(ComponentManager* manager, std::string componentName);
 		void unregisterComponent(std::size_t uniqueComponentID);
 		void unregisterAll();
 
-		std::shared_ptr<ComponentManager> getComponentManager(std::string componentName);
-		std::shared_ptr<ComponentManager> getComponentManager(std::size_t uniqueComponentID);
+		ComponentManager* getComponentManager(std::string componentName);
+		ComponentManager* getComponentManager(std::size_t uniqueComponentID);
+		const ComponentManager* getComponentManager(std::string componentName) const;
+		const ComponentManager* getComponentManager(std::size_t uniqueComponentID) const;
 
 		[[nodiscard]] std::size_t getComponentIDByName(std::string componentName) const;
 
 	private:
-		PersistentVector<std::shared_ptr<ComponentManager>, 256> m_registeredComponents;
+		PersistentVector<ComponentManager*, 256> m_registeredComponents;
 		std::unordered_map<std::string, PageCapacityType> m_nameToID; // Maps component's name to its unique ID.
 	};
 
-	std::size_t ComponentRegistrar::Internal::registerComponent(std::shared_ptr<ComponentManager> manager, std::string componentName)
+	std::size_t ComponentRegistrar::Internal::registerComponent(ComponentManager* manager, std::string componentName)
 	{
 		MEMORY_GUARD;
 
@@ -39,7 +41,7 @@ namespace engine
 
 		std::size_t uniqueComponentID = m_registeredComponents.getNextEmptyIndex();
 		auto found = m_registeredComponents.find(
-			[&uniqueComponentID](const std::shared_ptr<ComponentManager>& entry)
+			[&uniqueComponentID](const ComponentManager* entry)
 			{
 				return entry->getUniqueComponentID() == uniqueComponentID;
 			});
@@ -52,13 +54,13 @@ namespace engine
 		m_nameToID[componentName] = uniqueComponentID;
 		manager->m_internal->setComponentName(componentName);
 		manager->m_internal->setUniqueComponentID(uniqueComponentID);
-		return m_registeredComponents.push(std::move(manager)).getIndex();
+		return m_registeredComponents.push(manager).getIndex();
 	}
 
 	void ComponentRegistrar::Internal::unregisterComponent(std::size_t uniqueComponentID)
 	{
 		auto it = m_registeredComponents.find(
-			[&uniqueComponentID](const std::shared_ptr<ComponentManager>& entry)
+			[&uniqueComponentID](const ComponentManager* entry)
 			{
 				return entry->getUniqueComponentID() == uniqueComponentID;
 			});
@@ -82,7 +84,31 @@ namespace engine
 		}
 	}
 
-	std::shared_ptr<ComponentManager> ComponentRegistrar::Internal::getComponentManager(std::size_t uniqueComponentID)
+	std::size_t ComponentRegistrar::Internal::getComponentIDByName(std::string componentName) const
+	{
+		auto found = m_nameToID.find(componentName);
+		if (found != m_nameToID.end())
+			return found->second;
+		return static_cast<std::size_t>(-1);
+	}
+
+	ComponentManager* ComponentRegistrar::Internal::getComponentManager(std::string componentName)
+	{
+		MEMORY_GUARD;
+
+		auto found = m_registeredComponents.find(
+			[&componentName](const ComponentManager* entry)
+			{
+				return entry->getComponentName() == componentName;
+			});
+		if (found != m_registeredComponents.end())
+			return found->get();
+
+		ERROR_LOG("Cannot get the manager for this component. The component was not properly registered.");
+		return nullptr;
+	}
+
+	ComponentManager* ComponentRegistrar::Internal::getComponentManager(std::size_t uniqueComponentID)
 	{
 		auto it = m_registeredComponents.at(uniqueComponentID);
 		if (it != m_registeredComponents.end())
@@ -92,25 +118,27 @@ namespace engine
 		return nullptr;
 	}
 
-	std::size_t ComponentRegistrar::Internal::getComponentIDByName(std::string componentName) const
-	{
-		auto found = m_nameToID.find(componentName);
-		if (found != m_nameToID.end())
-			return found->second;
-		return static_cast<std::size_t>(-1);
-	}
-
-	std::shared_ptr<ComponentManager> ComponentRegistrar::Internal::getComponentManager(std::string componentName)
+	const ComponentManager* ComponentRegistrar::Internal::getComponentManager(std::string componentName) const
 	{
 		MEMORY_GUARD;
 
 		auto found = m_registeredComponents.find(
-			[&componentName](const std::shared_ptr<ComponentManager>& entry)
+			[&componentName](const ComponentManager* entry)
 			{
 				return entry->getComponentName() == componentName;
 			});
 		if (found != m_registeredComponents.end())
 			return found->get();
+
+		ERROR_LOG("Cannot get the manager for this component. The component was not properly registered.");
+		return nullptr;
+	}
+
+	const ComponentManager* ComponentRegistrar::Internal::getComponentManager(std::size_t uniqueComponentID) const
+	{
+		auto it = m_registeredComponents.at(uniqueComponentID);
+		if (it != m_registeredComponents.end())
+			return it->get();
 
 		ERROR_LOG("Cannot get the manager for this component. The component was not properly registered.");
 		return nullptr;
@@ -124,9 +152,9 @@ namespace engine
 	ComponentRegistrar::~ComponentRegistrar()
 	{}
 
-	std::size_t ComponentRegistrar::registerComponentInternal(std::shared_ptr<ComponentManager> manager, std::string componentName)
+	std::size_t ComponentRegistrar::registerComponentInternal(ComponentManager* manager, std::string componentName)
 	{
-		return m_internal->registerComponent(std::move(manager), std::move(componentName));
+		return m_internal->registerComponent(manager, std::move(componentName));
 	}
 
 	void ComponentRegistrar::unregisterComponentInternal(std::size_t uniqueComponentID)
@@ -139,12 +167,22 @@ namespace engine
 		m_internal->unregisterAll();
 	}
 
-	std::shared_ptr<ComponentManager> ComponentRegistrar::getComponentManager(std::string componentName)
+	ComponentManager* ComponentRegistrar::getComponentManager(std::string componentName)
 	{
 		return m_internal->getComponentManager(std::move(componentName));
 	}
 
-	std::shared_ptr<ComponentManager> ComponentRegistrar::getComponentManager(std::size_t uniqueComponentID)
+	const ComponentManager* ComponentRegistrar::getComponentManager(std::string componentName) const
+	{
+		return m_internal->getComponentManager(std::move(componentName));
+	}
+
+	ComponentManager* ComponentRegistrar::getComponentManager(std::size_t uniqueComponentID)
+	{
+		return m_internal->getComponentManager(uniqueComponentID);
+	}
+
+	const ComponentManager* ComponentRegistrar::getComponentManager(std::size_t uniqueComponentID) const
 	{
 		return m_internal->getComponentManager(uniqueComponentID);
 	}

@@ -2,8 +2,9 @@
 
 #include <memory>
 
-#include <engine/core/math/vector3.h>
 #include <engine/core/math/matrix4x4.h>
+#include <engine/core/math/ray.h>
+#include <engine/core/math/vector3.h>
 
 namespace engine
 {
@@ -35,11 +36,26 @@ namespace engine
 		void setFov(float fov);
 		void setFarClipPlane(float plane);
 		void setNearClipPlane(float plane);
-		void setAspects(std::uint32_t width, std::uint32_t height);
 
 		std::uint32_t width() const { return m_viewportWidth; }
+		void setWidth(std::uint32_t width);
+
 		std::uint32_t height() const { return m_viewportHeight; }
+		void setHeight(std::uint32_t height);
+
 		float aspectRatio() const { return static_cast<float>(m_viewportWidth) / static_cast<float>(m_viewportHeight); }
+		void setAspects(std::uint32_t width, std::uint32_t height);
+
+		// XY coordinates represent the position on the screen.
+		// Z coordinate represents the hyperbolical distance between the camera and the point.
+		Vector3 worldPointToScreen(Vector3 world) const;
+
+		// XY coordinates represent the position on the screen.
+		// Z coordinate represents the distance from the camera plane.
+		Vector3 screenPointToWorld(Vector3 screen) const;
+			
+		// Converts a screen point to a world relative ray which starts in the near camera plane and goes to the far one.
+		Ray screenPointToRay(Vector2 screen) const;
 
 	private:
 		void updateProjectionMatrix();

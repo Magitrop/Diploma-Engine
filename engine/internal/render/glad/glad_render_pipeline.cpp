@@ -20,12 +20,10 @@ namespace engine
 										   std::shared_ptr<ResourceManager> resourceManager)
 		: m_entityManager(entityManager)
 		, m_resourceManager(std::dynamic_pointer_cast<GladResourceManager>(resourceManager))
+		, m_meshRenderer(dynamic_cast<GladMeshRenderer*>(entityManager->getComponentManager<MeshRenderer>()))
 	{
+		DEBUG_ASSERT(m_entityManager != nullptr);
 		DEBUG_ASSERT(m_resourceManager != nullptr);
-
-		auto renderer = std::dynamic_pointer_cast<GladMeshRenderer>(entityManager->getComponentManager<MeshRenderer>());
-		DEBUG_ASSERT(renderer != nullptr);
-		m_meshRenderer = std::dynamic_pointer_cast<GladMeshRendererInternal>(renderer->m_internal);
 		DEBUG_ASSERT(m_meshRenderer != nullptr);
 	}
 
@@ -37,6 +35,11 @@ namespace engine
 										std::shared_ptr<IEditorDrawer> editorDrawer)
 	{
 		bool result = true;
+
+		glLineWidth(8);
+
+		//glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -56,7 +59,7 @@ namespace engine
 			{
 				if (type == GL_DEBUG_TYPE_ERROR)
 					ERROR_LOG(message);
-			}, 0
+			}, nullptr
 		);
 
 		m_editorDrawer = std::move(editorDrawer);
@@ -78,6 +81,7 @@ namespace engine
 	{
 		MEMORY_GUARD;
 
+		m_editorDrawer->beginDraw();
 		for (auto& slot : m_viewports->viewports())
 		{
 			if (slot.empty())
@@ -90,13 +94,19 @@ namespace engine
 			Matrix4x4 modelMatrix = Matrix4x4(1);
 
 			{
-				GladFramebuffer* selectionFramebuffer = static_cast<GladFramebuffer*>(window.framebuffers().viewportFramebuffer.get());
-				ScopedFramebuffer currentFramebuffer = selectionFramebuffer->useFramebuffer();
-				glViewport(0, 0, selectionFramebuffer->width(), selectionFramebuffer->height());
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				GladFramebuffer* viewportFramebuffer = static_cast<GladFramebuffer*>(window.framebuffers().viewportFramebuffer.get());
+				ScopedFramebuffer currentFramebuffer = viewportFramebuffer->useFramebuffer();
+				glViewport(0, 0, viewportFramebuffer->width(), viewportFramebuffer->height());
+				glClear(GL_COLOR_BUFFER_BIT);
 
-				drawEditorContext(projectionMatrix, viewMatrix);
-				drawMeshes(projectionMatrix, viewMatrix);
+				m_editorDrawer->drawSpatialGrid(projectionMatrix, viewMatrix);
+
+				glClear(GL_DEPTH_BUFFER_BIT);
+				m_editorDrawer->drawContext(projectionMatrix, viewMatrix);
+				m_meshRenderer->drawMeshes(projectionMatrix, viewMatrix, false);
+
+				glClear(GL_DEPTH_BUFFER_BIT);
+				m_editorDrawer->drawGizmo(projectionMatrix, viewMatrix, false);
 			}
 
 			{
@@ -104,10 +114,17 @@ namespace engine
 				ScopedFramebuffer currentFramebuffer = selectionFramebuffer->useFramebuffer();
 				glViewport(0, 0, selectionFramebuffer->width(), selectionFramebuffer->height());
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				
+				glDisable(GL_BLEND);
 
-				//drawEditorContext(projectionMatrix, viewMatrix);
+				m_meshRenderer->drawMeshes(projectionMatrix, viewMatrix, true);
+				glClear(GL_DEPTH_BUFFER_BIT);
+				m_editorDrawer->drawGizmo(projectionMatrix, viewMatrix, true);
+
+				glEnable(GL_BLEND);
 			}
 		}
+		m_editorDrawer->endDraw();
 
 		glBindVertexArray(0);
 		glUseProgram(0);
@@ -116,73 +133,6 @@ namespace engine
 	void GladRenderPipeline::renderEditorSimulation()
 	{
 		MEMORY_GUARD;
-	}
-
-	void GladRenderPipeline::drawMeshes(const Matrix4x4& projection, const Matrix4x4& view)
-	{
-		MEMORY_GUARD;
-
-		std::size_t count = m_meshRenderer->m_meshID.size();
-
-		const auto materialIt = m_meshRenderer->m_material.begin();
-		const auto VAOIt = m_meshRenderer->m_meshVAO.begin();
-		const auto indicesIt = m_meshRenderer->m_meshIndices.begin();
-
-		Matrix4x4 modelMatrix = Matrix4x4(1);
-		// TODO: realize material & shader sorting and corresponding rendering
-		for (std::size_t i = 0; i < count; ++i, ++materialIt, ++VAOIt, ++indicesIt)
-		{
-			const GladMaterialImpl* material = materialIt->get();
-			const GladShader* shader = material->shader();
-			const GLuint VAO = VAOIt->get();
-			const auto& indices = indicesIt->get();
-
-			material->useShader();
-
-			shader->setMatrix4x4("projection", projection);
-			shader->setMatrix4x4("view", view);
-			shader->setMatrix4x4("model", modelMatrix);
-
-			glBindVertexArray(VAO);
-			glDrawElements(GL_TRIANGLES, indices->size(), GL_UNSIGNED_INT, &(*indices)[0]);
-		}
-	}
-
-	void GladRenderPipeline::drawEditorContext(const Matrix4x4& projection, const Matrix4x4& view)
-	{
-		MEMORY_GUARD;
-
-		auto context = std::static_pointer_cast<GladEditorDrawerContext>(m_editorDrawer->context());
-		DEBUG_ASSERT(context != nullptr);
-
-		const auto& primitives = context->primitives();
-		if (primitives.empty())
-			return;
-
-		std::int8_t renderQueueIndex = 0;
-		for (auto& primitive : primitives)
-		{
-			const GladMaterialImpl* material = m_resourceManager->getMaterial(primitive.material);
-			const GladShader* shader = material->shader();
-
-			if (material->renderQueue() != renderQueueIndex)
-			{
-				renderQueueIndex = material->renderQueue();
-				glClear(GL_DEPTH_BUFFER_BIT);
-			}
-
-			const GLuint VAO = primitive.VAO;
-			const auto* indices = &primitive.indices;
-
-			material->useShader();
-
-			shader->setMatrix4x4("projection", projection);
-			shader->setMatrix4x4("view", view);
-			shader->setMatrix4x4("model", primitive.transform);
-
-			glBindVertexArray(VAO);
-			glDrawElements(GL_TRIANGLES, indices->size(), GL_UNSIGNED_INT, &(*indices)[0]);
-		}
 	}
 
 #else // #if IS_EDITOR

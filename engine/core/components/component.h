@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <type_traits>
 
 namespace engine
 {
@@ -9,13 +10,17 @@ namespace engine
 	class ComponentID
 	{
 	public:
-		explicit ComponentID(std::size_t index);
+		explicit ComponentID(std::size_t id)
+			: m_id(id)
+		{}
 
 		// Creates an invalid ComponentID.
-		explicit ComponentID();
+		explicit ComponentID()
+			: m_id(static_cast<std::size_t>(-1))
+		{}
 
-		std::size_t id() const;
-		operator std::size_t() const;
+		std::size_t id() const { return m_id; }
+		operator std::size_t() const { return m_id; }
 
 		bool isValid() const;
 
@@ -23,3 +28,12 @@ namespace engine
 		std::size_t m_id;
 	};
 } // namespace engine
+
+template <>
+struct std::hash<engine::ComponentID>
+{
+	std::size_t operator()(const engine::ComponentID& key) const
+	{
+		return key;
+	}
+};

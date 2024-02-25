@@ -3,7 +3,6 @@
 #include <engine/editor/gizmo/editor_drawer.h>
 #include <engine/internal/core/constants/runtime_constants.h>
 #include <engine/internal/helpers/persistent_vector.h>
-#include <engine/internal/render/glad/glad_editor_drawer_primitives.h>
 #include <engine/internal/render/glad/glad_material.h>
 
 #include <engine/dependencies/glad/include/glad/glad.h>
@@ -28,6 +27,7 @@ namespace engine
 			Triangle = 3, // GL_TRIANGLES
 			TriangleStrip = 4, // GL_TRIANGLE_STRIP
 		};
+		static GLenum drawingType(DrawingType type);
 
 		struct Primitive
 		{
@@ -44,13 +44,11 @@ namespace engine
 		virtual GladEditorDrawerContext& box(Matrix4x4 transform,
 											 MaterialID material) override;
 		virtual GladEditorDrawerContext& cone() override;
-		virtual GladEditorDrawerContext& line() override;
+		virtual GladEditorDrawerContext& line(Vertex start, Vertex end, MaterialID material) override;
 		virtual GladEditorDrawerContext& mesh(std::vector<Vertex> vertices,
 											  std::vector<std::uint32_t> indices,
 											  Matrix4x4 transform,
 											  MaterialID material) override;
-
-		const std::vector<Primitive>& primitives() const { return m_primitives; }
 
 	private:
 		std::vector<Primitive> m_primitives;
@@ -70,11 +68,15 @@ namespace engine
 		[[nodiscard]] virtual Context& context() override;
 
 	private:
-		virtual void drawSpatialGrid() override;
-		virtual void drawGizmo() override;
+		virtual void drawContext(const Matrix4x4& projection, const Matrix4x4& view) override;
+		virtual void drawGizmo(const Matrix4x4& projection, const Matrix4x4& view, bool selectionFramebuffer) override;
+		virtual void drawSpatialGrid(const Matrix4x4& projection, const Matrix4x4& view) override;
+
+		virtual void beginDraw() override;
+		virtual void endDraw() override;
 
 		void sortPrimitivesByRenderQueue();
-		
+
 	private:
 		std::shared_ptr<IRenderPipeline> m_renderPipeline;
 		std::shared_ptr<ResourceManager> m_resourceManager;

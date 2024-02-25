@@ -9,6 +9,7 @@ namespace engine
 {
 	class ComponentRegistrar;
 	class EntityManager;
+	class EntityManagerAccessor;
 	class IGraphicAPI;
 	class InputSystem;
 	class InputSystemAccessor;
@@ -59,6 +60,7 @@ namespace engine
 		std::shared_ptr<TimeManager> m_timeManager;
 		std::shared_ptr<ComponentRegistrar> m_componentRegistrar;
 		std::shared_ptr<EntityManager> m_entityManager;
+		std::shared_ptr<EntityManagerAccessor> m_entityManagerAccessor;
 		std::shared_ptr<ResourceManager> m_resourceManager;
 		std::shared_ptr<IRenderPipeline> m_renderPipeline;
 		std::shared_ptr<InputSystem> m_inputSystem;
